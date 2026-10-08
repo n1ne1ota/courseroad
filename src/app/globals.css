@@ -1,0 +1,32 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@source "../../../../ui";
+@source "../../../../modules";
+
+/*
+ * DESIGN SYSTEM ARCHITECTURE
+ * This project is migrating to a dual Custom UI approach powered by Vanilla CSS Modules:
+ * • Iota UI   → Replaces HeroUI (Rich interactive components: navbars, modals, tabs)
+ * • Kurume UI → Replaces shadcn/ui (Dashboard-style components: tables, commands, forms)
+ * 
+ * SINGLE SOURCE OF TRUTH: globals.css CSS custom properties
+ * Both systems read from the exact same semantic token values defined there.
+ */
+@import "../../../../ui/styles/colors.css";
+@import "../../../../ui/styles/typography.css";
+@import "../../../../ui/styles/radius.css";
+@import "../../../../ui/styles/shadows.css";
+@import "../../../../ui/styles/transitions.css";
+@import "../../../../ui/styles/z-index.css";
+@import "../../../../ui/styles/breakpoints.css";
+@import "../../../../ui/styles/theme.css";
+@import "../../../../ui/styles/base.css";
+
+@keyframes sheen {
+    100% {
+        transform: translateX(100%);
+    }
+}

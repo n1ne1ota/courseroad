@@ -1,0 +1,68 @@
+model Purchase {
+    id                    String         @id @default(uuid()) @db.Uuid
+    userId                String         @db.Uuid
+    courseId              String         @db.Uuid
+    organizationId        String?        @db.Uuid
+    amount                Int
+    currency              String         @default("usd")
+    status                PurchaseStatus @default(Paid)
+    stripeChargeId        String
+    stripePaymentIntentId String?
+    refundedAt            DateTime?
+    createdAt             DateTime       @default(now())
+    updatedAt             DateTime       @updatedAt
+
+    @@unique([userId, courseId])
+    @@unique([stripeChargeId])
+    @@index([userId])
+    @@index([courseId])
+    @@index([organizationId])
+    @@index([status])
+    @@map("purchase")
+}
+
+model PlatformPurchase {
+    id                    String         @id @default(uuid()) @db.Uuid
+    userId                String         @db.Uuid
+    amount                Int
+    currency              String         @default("usd")
+    status                PurchaseStatus @default(Paid)
+    stripeChargeId        String
+    stripePaymentIntentId String?
+    description           String
+    metadata              Json?
+    refundedAt            DateTime?
+    createdAt             DateTime       @default(now())
+    updatedAt             DateTime       @updatedAt
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([stripeChargeId])
+    @@index([userId])
+    @@index([status])
+    @@map("platform_purchase")
+}
+
+model StripeEvent {
+    id               String   @id @default(uuid()) @db.Uuid
+    apiId            String   @unique
+    type             String
+    object           String
+    account          String?
+    created          DateTime
+    data             Json
+    livemode         Boolean
+    pendingWebhooks  Int
+    request          Json?
+    type_description String?
+    createdAt        DateTime @default(now())
+
+    @@map("stripe_event")
+}
+
+enum PurchaseStatus {
+    Pending
+    Paid
+    Refunded
+    Failed
+}

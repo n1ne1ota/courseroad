@@ -1,0 +1,93 @@
+model Quiz {
+    id                 String         @id @default(uuid()) @db.Uuid
+    userId             String         @db.Uuid
+    organizationId     String?        @db.Uuid
+    title              String
+    description        String?        @db.Text
+    courseId           String?        @db.Uuid
+    lessonId           String?        @db.Uuid
+    visibility         QuizVisibility @default(DRAFT)
+    timeLimit          Int?
+    allowedAttempts    Int?
+    passingScore       Int?
+    shuffleQuestions   Boolean        @default(false)
+    showCorrectAnswers Boolean        @default(true)
+    showTimer          Boolean        @default(true)
+    thumbnailUrl       String?
+    createdAt          DateTime       @default(now())
+    updatedAt          DateTime       @updatedAt
+
+    questions   QuizQuestion[]
+    submissions QuizSubmission[]
+
+    @@index([userId])
+    @@index([organizationId])
+    @@index([courseId])
+    @@index([lessonId])
+    @@map("quiz")
+}
+
+model QuizQuestion {
+    id             String       @id @default(uuid()) @db.Uuid
+    quizId         String       @db.Uuid
+    organizationId String?      @db.Uuid
+    type           QuestionType
+    title          String?      @db.VarChar(200)
+    prompt         String       @db.Text
+    explanation    String?      @db.Text
+    codeLanguage   String?      @db.VarChar(50)
+    imageUrl       String?
+    order          Int
+    createdAt      DateTime     @default(now())
+    updatedAt      DateTime     @updatedAt
+
+    quiz    Quiz         @relation(fields: [quizId], references: [id], onDelete: Cascade)
+    options QuizOption[]
+
+    @@index([quizId])
+    @@index([organizationId])
+    @@map("quiz_question")
+}
+
+model QuizOption {
+    id             String  @id @default(uuid()) @db.Uuid
+    questionId     String  @db.Uuid
+    organizationId String? @db.Uuid
+    content        String  @db.Text
+    isCorrect      Boolean @default(false)
+    order          Int
+
+    question QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+    @@index([questionId])
+    @@index([organizationId])
+    @@map("quiz_option")
+}
+
+model QuizSubmission {
+    id             String   @id @default(uuid()) @db.Uuid
+    quizId         String   @db.Uuid
+    userId         String   @db.Uuid
+    organizationId String?  @db.Uuid
+    score          Int
+    createdAt      DateTime @default(now())
+
+    quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+    @@index([quizId])
+    @@index([userId])
+    @@index([organizationId])
+    @@map("quiz_submission")
+}
+
+enum QuestionType {
+    SINGLE_CHOICE
+    MULTIPLE_CHOICE
+    CUSTOM_INPUT
+}
+
+enum QuizVisibility {
+    DRAFT
+    PUBLIC
+    PRIVATE
+}

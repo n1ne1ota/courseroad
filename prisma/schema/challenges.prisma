@@ -1,0 +1,61 @@
+model CodingChallenge {
+    id             String              @id @default(uuid()) @db.Uuid
+    userId         String              @db.Uuid
+    organizationId String?             @db.Uuid
+    title          String
+    description    String?             @db.Text
+    starterCode    String?             @db.Text
+    solution       String?             @db.Text
+    language       ChallengeLanguage   @default(JavaScript)
+    difficulty     ChallengeDifficulty @default(Easy)
+    status         ChallengeStatus     @default(Draft)
+    courseId       String?             @db.Uuid
+    lessonId       String?             @db.Uuid
+    createdAt      DateTime            @default(now())
+    updatedAt      DateTime            @updatedAt
+
+    submissions ChallengeSubmission[]
+
+    @@index([userId])
+    @@index([organizationId])
+    @@index([courseId])
+    @@index([lessonId])
+    @@map("coding_challenge")
+}
+
+model ChallengeSubmission {
+    id             String   @id @default(uuid()) @db.Uuid
+    challengeId    String   @db.Uuid
+    userId         String   @db.Uuid
+    organizationId String?  @db.Uuid
+    code           String   @db.Text
+    passed         Boolean  @default(false)
+    createdAt      DateTime @default(now())
+
+    challenge CodingChallenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+
+    @@index([challengeId])
+    @@index([userId])
+    @@index([organizationId])
+    @@map("challenge_submission")
+}
+
+enum ChallengeLanguage {
+    JavaScript
+    TypeScript
+    Python
+    Rust
+    Go
+}
+
+enum ChallengeDifficulty {
+    Easy
+    Medium
+    Hard
+}
+
+enum ChallengeStatus {
+    Draft
+    Published
+    Archived
+}
