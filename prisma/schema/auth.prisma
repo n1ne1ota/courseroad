@@ -1,0 +1,139 @@
+model User {
+    id                       String              @id @default(uuid()) @db.Uuid
+    uid                      Int                 @unique @default(autoincrement())
+    firstName                String
+    lastName                 String
+    name                     String?
+    username                 String
+    email                    String
+    emailVerified            Boolean
+    emailVerifiedAt          DateTime?
+    image                    String?
+    role                     String              @default("learner")
+    banned                   Boolean?            @default(false)
+    banReason                String?
+    banExpires               DateTime?
+    createdAt                DateTime            @default(now())
+    updatedAt                DateTime            @updatedAt
+    sessions                 Session[]
+    accounts                 Account[]
+    stripeCustomerId         String?             @unique
+    stripeAccountId          String?             @unique
+    stripeOnboardingComplete Boolean             @default(false)
+    hasPaidActivationFee     Boolean             @default(false)
+    onboardingComplete       Boolean             @default(false)
+    bio                      String?
+    websiteUrl               String?
+    twitterUrl               String?
+    githubUrl                String?
+    platformPurchases        PlatformPurchase[]
+    deviceFingerprints       DeviceFingerprint[]
+    members                  Member[]
+    invitations              Invitation[]
+    twoFactorEnabled         Boolean?            @default(false)
+    twofactors               TwoFactor[]
+    passkeys                 Passkey[]
+    lastLoginMethod          String?
+    isAnonymous              Boolean?            @default(false)
+
+    @@unique([email])
+    @@index([role])
+    @@map("user")
+}
+
+model Session {
+    id                   String   @id @default(uuid()) @db.Uuid
+    expiresAt            DateTime
+    token                String
+    createdAt            DateTime @default(now())
+    updatedAt            DateTime @updatedAt
+    ipAddress            String?
+    userAgent            String?
+    impersonatedBy       String?
+    activeOrganizationId String?  @db.Uuid
+    userId               String   @db.Uuid
+    user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([token])
+    @@index([userId])
+    @@map("session")
+}
+
+model Account {
+    id                    String    @id @default(uuid()) @db.Uuid
+    accountId             String
+    providerId            String
+    userId                String    @db.Uuid
+    accessToken           String?
+    refreshToken          String?
+    idToken               String?
+    accessTokenExpiresAt  DateTime?
+    refreshTokenExpiresAt DateTime?
+    scope                 String?
+    password              String?
+    createdAt             DateTime  @default(now())
+    updatedAt             DateTime  @updatedAt
+    user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([providerId, accountId])
+    @@index([userId])
+    @@map("account")
+}
+
+model Verification {
+    id         String    @id @default(uuid()) @db.Uuid
+    identifier String
+    value      String
+    expiresAt  DateTime
+    createdAt  DateTime? @default(now())
+    updatedAt  DateTime?
+
+    @@index([identifier])
+    @@map("verification")
+}
+
+model TwoFactor {
+    id                      String    @id @default(uuid()) @db.Uuid
+    secret                  String
+    backupCodes             String
+    userId                  String    @db.Uuid
+    user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    verified                Boolean?  @default(true)
+    failedVerificationCount Int?      @default(0)
+    lockedUntil             DateTime?
+
+    @@index([secret])
+    @@index([userId])
+    @@map("twoFactor")
+}
+
+model Passkey {
+    id           String    @id @default(uuid()) @db.Uuid
+    name         String?
+    publicKey    String
+    userId       String    @db.Uuid
+    user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    credentialID String
+    counter      Int
+    deviceType   String
+    backedUp     Boolean
+    transports   String?
+    createdAt    DateTime? @default(now())
+    aaguid       String?
+
+    @@index([userId])
+    @@index([credentialID])
+    @@map("passkey")
+}
+
+model Jwks {
+    id         String    @id
+    publicKey  String
+    privateKey String
+    createdAt  DateTime
+    expiresAt  DateTime?
+    alg        String?
+    crv        String?
+
+    @@map("jwks")
+}

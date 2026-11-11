@@ -1,0 +1,60 @@
+/** Browser-safe creator projection. */
+export type PublicLesson = { id: string; title: string; hasVideo: boolean };
+export type PublicModule = { id: string; title: string; lessons: PublicLesson[] };
+export type CreatorInfo = { id: string; firstName: string | null; lastName: string | null };
+
+export type VideoStatus = 'Processing' | 'Ready' | 'Failed';
+export type Course = {
+    id: string;
+    userId: string;
+    organizationId: string | null;
+    title: string;
+    description: string | null;
+    shortDescription: string | null;
+    fileKey: string | null;
+    thumbnailFileName: string | null;
+    thumbnailFileSize: number | null;
+    introVideoUrl: string | null;
+    introVideoFileName: string | null;
+    introVideoFileSize: number | null;
+    introVideoThumbnailUrl: string | null;
+    introVideoThumbnailFileName: string | null;
+    introVideoThumbnailFileSize: number | null;
+    introVideoGuid: string | null;
+    introVideoStatus: VideoStatus | null;
+    category: string | null;
+    slug: string;
+    price: number | null;
+    duration: number | null;
+    createdAt: Date;
+    updatedAt: Date;
+    publishedAt: Date | null;
+    archivedAt: Date | null;
+    deletedAt: Date | null;
+    level: 'Beginner' | 'Intermediate' | 'Advanced' | null;
+    status: 'Draft' | 'Published' | 'Archived';
+};
+export type Module = {
+    id: string;
+    title: string;
+    order: number;
+    courseId: string;
+    organizationId: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+};
+export type Lesson = {
+    id: string;
+    title: string;
+    description: string | null;
+    videoUrl: string | null;
+    videoThumbnailUrl: string | null;
+    videoGuid: string | null;
+    videoStatus: VideoStatus | null;
+    isPreview: boolean;
+    order: number;
+    moduleId: string;
+    organizationId: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+};

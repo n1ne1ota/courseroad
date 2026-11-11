@@ -1,0 +1,142 @@
+model Course {
+    id                          String       @id @default(uuid()) @db.Uuid
+    userId                      String       @db.Uuid
+    organizationId              String?      @db.Uuid
+    title                       String
+    description                 String?
+    shortDescription            String?
+    fileKey                     String?
+    thumbnailFileName           String?
+    thumbnailFileSize           Int?
+    introVideoUrl               String?
+    introVideoFileName          String?
+    introVideoFileSize          Int?
+    introVideoThumbnailUrl      String?
+    introVideoThumbnailFileName String?
+    introVideoThumbnailFileSize Int?
+    introVideoGuid              String?
+    introVideoStatus            VideoStatus?
+    category                    String?
+    slug                        String
+    price                       Int?
+    duration                    Int?
+    createdAt                   DateTime     @default(now())
+    updatedAt                   DateTime     @updatedAt
+    publishedAt                 DateTime?
+    archivedAt                  DateTime?
+    deletedAt                   DateTime?
+    level                       CourseLevel?
+    status                      CourseStatus @default(Draft)
+    enrollments                 Enrollment[]
+    modules                     Module[]
+
+    @@unique([userId, slug])
+    @@index([userId])
+    @@index([organizationId])
+    @@index([status])
+    @@index([category])
+    @@index([introVideoGuid])
+    @@map("course")
+}
+
+model Module {
+    id             String   @id @default(uuid()) @db.Uuid
+    title          String
+    order          Int
+    courseId       String   @db.Uuid
+    organizationId String?  @db.Uuid
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+    course         Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+    lessons        Lesson[]
+
+    @@unique([courseId, order])
+    @@index([courseId])
+    @@index([organizationId])
+    @@map("module")
+}
+
+model Lesson {
+    id                String               @id @default(uuid()) @db.Uuid
+    title             String
+    description       String?
+    videoUrl          String?
+    videoThumbnailUrl String?
+    videoGuid         String?
+    videoStatus       VideoStatus?
+    isPreview         Boolean              @default(false)
+    order             Int
+    moduleId          String               @db.Uuid
+    organizationId    String?              @db.Uuid
+    createdAt         DateTime             @default(now())
+    updatedAt         DateTime             @updatedAt
+    module            Module               @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+    userProgress      UserLessonProgress[]
+
+    @@unique([moduleId, order])
+    @@index([moduleId])
+    @@index([organizationId])
+    @@index([videoGuid])
+    @@map("lesson")
+}
+
+model Enrollment {
+    id              String           @id @default(uuid()) @db.Uuid
+    userId          String           @db.Uuid
+    courseId        String           @db.Uuid
+    organizationId  String?          @db.Uuid
+    source          EnrollmentSource @default(Purchase)
+    accessExpiresAt DateTime?
+    createdAt       DateTime         @default(now())
+    updatedAt       DateTime         @updatedAt
+    course          Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, courseId])
+    @@index([userId])
+    @@index([courseId])
+    @@index([organizationId])
+    @@index([accessExpiresAt])
+    @@map("enrollment")
+}
+
+enum CourseLevel {
+    Beginner
+    Intermediate
+    Advanced
+}
+
+enum CourseStatus {
+    Draft
+    Published
+    Archived
+}
+
+enum EnrollmentSource {
+    Purchase
+    AdminGrant
+    Free
+    Subscription
+}
+
+enum VideoStatus {
+    Processing
+    Ready
+    Failed
+}
+
+model UserLessonProgress {
+    id             String    @id @default(uuid()) @db.Uuid
+    userId         String    @db.Uuid
+    lessonId       String    @db.Uuid
+    organizationId String?   @db.Uuid
+    isCompleted    Boolean   @default(false)
+    completedAt    DateTime?
+    updatedAt      DateTime  @updatedAt
+    lesson         Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, lessonId])
+    @@index([userId])
+    @@index([lessonId])
+    @@index([organizationId])
+    @@map("user_lesson_progress")
+}

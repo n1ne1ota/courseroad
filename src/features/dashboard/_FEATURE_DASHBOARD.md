@@ -1,0 +1,15 @@
+# Dashboard Feature
+
+| Scope      | Role / Persona | Layout Component                                         | Sidebar Config                        | Feature Directory                   | Primary Nav Items                                                                     |
+| :--------- | :------------- | :------------------------------------------------------- | :------------------------------------ | :---------------------------------- | :------------------------------------------------------------------------------------ |
+| **B2B**    | Learner        | `DashboardOrganizationLayout` (with `role='learner'`)    | `orgDashboardData(..., 'learner')`    | `dashboard/organization/learner`    | My Courses, Browse Courses, Quizzes, Projects, Certificates                           |
+| **B2B**    | Instructor     | `DashboardOrganizationLayout` (with `role='instructor'`) | `orgDashboardData(..., 'instructor')` | `dashboard/organization/instructor` | Dashboard, Quizzes (grading panel), Students                                          |
+| **B2B**    | Creator        | `DashboardOrganizationLayout` (with `role='creator'`)    | `orgDashboardData(..., 'creator')`    | `dashboard/organization/creator`    | Dashboard, Courses, Quizzes                                                           |
+| **B2B**    | Manager        | `DashboardOrganizationLayout` (with `role='manager'`)    | `orgDashboardData(..., 'manager')`    | `dashboard/organization/manager`    | Dashboard, Courses, Quizzes, Students, Members, Analytics, Settings                   |
+| **B2B**    | Owner          | `DashboardOrganizationLayout` (with `role='owner'`)      | `orgDashboardData(..., 'owner')`      | `dashboard/organization/owner`      | Dashboard, Courses, Quizzes, Students, Members, Analytics, Settings                   |
+| **B2C**    | Learner        | `DashboardPlatformLayout` (with `role='learner'`)        | `orgDashboardData(..., 'learner')`    | `dashboard/platform/learner`        | My Courses, Browse Courses, Subscriptions, Billing, Settings                          |
+| **B2C**    | Creator        | `DashboardPlatformLayout` (with `role='creator'`)        | `orgDashboardData(..., 'creator')`    | `dashboard/platform/creator`        | Dashboard, Course Builder, Payouts, Earnings, Settings                                |
+| **Global** | Admin          | `DashboardPlatformLayout` (with `role='admin'`)          | `adminDashboardData`                  | `dashboard/platform/admin`          | User Management, Teachers list, Analytics, System Tracking (Fingerprinting), Settings |
+| **Global** | Staff          | `DashboardPlatformLayout` (with `role='staff'`)          | `staffDashboardData`                  | `dashboard/platform/staff`          | Support Overview, User lookup, Content Moderation, Reports, Analytics                 |
+
+Dashboard is a composition layer. Domain reads and mutations live in feature-owned `server/` modules; profile/admin operations belong to auth, enrollment/progress to course, and earnings/receipts to payment. Pass URL organization slugs through shells and views. Layout checks do not substitute for DAL authorization.

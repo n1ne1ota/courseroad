@@ -1,0 +1,44 @@
+model DeviceFingerprint {
+    id        String  @id @default(uuid()) @db.Uuid
+    visitorId String  @unique
+    userId    String? @db.Uuid
+    user      User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+    // High-stability signals (Weight: HIGH)
+    hardwareConcurrency Int?
+    deviceMemory        Float?
+    screenWidth         Int?
+    screenHeight        Int?
+    colorDepth          Int?
+    platform            String?
+    timezone            String?
+
+    // Biometric signals (Weight: VERY HIGH)
+    canvasHash    String?
+    webglRenderer String?
+    webglVendor   String?
+    audioHash     String?
+    fontsList     String? // JSON array of detected fonts
+
+    // Network signals (Weight: MEDIUM)
+    ipAddress      String?
+    userAgent      String?
+    acceptLanguage String?
+
+    // Composite hashes for fast-path lookups
+    stableHash String? // Hash of high-stability signals
+    fullHash   String? // Hash of all signals
+
+    // Scoring metadata
+    lastScore  Float?
+    driftCount Int    @default(0)
+
+    firstSeenAt DateTime @default(now())
+    lastSeenAt  DateTime @updatedAt
+
+    @@index([stableHash])
+    @@index([fullHash])
+    @@index([userId])
+    @@index([visitorId])
+    @@map("device_fingerprint")
+}
