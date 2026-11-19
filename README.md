@@ -1,16 +1,14 @@
 # Courseroad
 
+## Deployment
+
 https://courseroad-staging.vercel.app/
 
-hey! this is text explaining what my awesome project is :)
-here's an AWESOME gif of my project!
-![awesome gif](https://user-cdn.hackclub-assets.com/019f0195-7b3c-7a6b-a8c9-ba589c575ae6/blahajmeow.gif)
+## Stack
 
-## HOW THIS WAS MADE
+next.js and react.
 
-this project was made with next.js and react.
-
-## heres how to run the project :)
+## How to run
 
 1. Clone the source code to your device
 
@@ -39,9 +37,6 @@ npm run build
 and also some stuff and keys in .env file
 
 ## AI DISCLOSURE
-
-what did you use ai for on this project? for example for this site:
-ai was used to copy css styling from template screenshots
 
 mostly debugging, bug fixing, and the complex vertex shader on the landing page
 
