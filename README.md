@@ -38,8 +38,6 @@ npm run build
 
 and also some stuff and keys in .env file
 
-and be joyous!
-
 ## AI DISCLOSURE
 
 what did you use ai for on this project? for example for this site:
