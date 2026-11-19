@@ -11,8 +11,8 @@ import { ReactLenis } from 'lenis/react';
 import { ThemeProvider as NextThemeProvider } from 'next-themes';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
-import { FingerprintProvider } from '@/providers/fingerprint-provider';
-import { ThemeAwareToastProvider } from '@/providers/toast-provider';
+import { FingerprintProvider } from '@/lib/providers/fingerprint-provider';
+import { ToastProvider } from '@/lib/providers/toast-provider';
 
 export interface ProviderProps {
   children: ReactNode;
@@ -28,7 +28,7 @@ export function Providers({ children, themeProps }: ProviderProps) {
         <NuqsAdapter>
           <NextThemeProvider {...themeProps}>
             <ReactLenis root>
-              <ThemeAwareToastProvider />
+              <ToastProvider />
               {children}
               <ReactQueryDevtools buttonPosition='bottom-right' initialIsOpen={false} />
             </ReactLenis>

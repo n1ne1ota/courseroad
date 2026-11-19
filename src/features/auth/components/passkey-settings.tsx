@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 
+import { Button, Input, Label, Separator } from '@courseroad/kurume-ui';
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, Fingerprint, KeyRound, Loader2, Pencil, Plus, ShieldAlert, Trash2, X } from 'lucide-react';
 
 import { deletePasskey, listPasskeys, registerPasskey, renamePasskey } from '@/lib/auth/auth-client';
 import { usePasskeySupported } from '@/lib/auth/use-passkey-support';
-
-import { Button, Input, Label, Separator } from '@courseroad/kurume-ui';
 
 import type { PasskeyInfo } from '@/types/auth.types';
 
@@ -100,7 +100,7 @@ export function PasskeySettings() {
     <div className='max-w-xl space-y-6'>
       <div className='space-y-1'>
         <h3 className='flex items-center gap-2 text-lg font-semibold'>
-          <KeyRound className='size-5 text-primary' />
+          <KeyRound className='size-5 text-brand' />
           Passkeys
         </h3>
         <p className='text-sm text-muted-foreground'>
@@ -142,7 +142,7 @@ export function PasskeySettings() {
               {passkeys.map(passkey => (
                 <li key={passkey.id} className='flex items-center gap-3 rounded-xl border bg-card p-4 shadow-sm'>
                   <div className='flex shrink-0 items-center justify-center rounded-lg bg-muted p-2'>
-                    <Fingerprint className='size-5 text-primary' />
+                    <Fingerprint className='size-5 text-brand' />
                   </div>
                   {editingId === passkey.id ? (
                     <div className='flex flex-1 items-center gap-2'>
@@ -179,9 +179,9 @@ export function PasskeySettings() {
                       {confirmDeleteId === passkey.id ? (
                         <div className='flex items-center gap-2'>
                           <Button
+                            color='destructive'
                             disabled={isMutating}
                             size='sm'
-                            variant='destructive'
                             onClick={() => deleteMutation.mutate(passkey.id)}
                           >
                             {deleteMutation.isPending && <Loader2 className='mr-1 size-4 animate-spin' />}
@@ -221,7 +221,7 @@ export function PasskeySettings() {
             </ul>
           )}
 
-          <Separator />
+          <Separator role='presentation' />
 
           {isAdding ? (
             <div className='space-y-3 rounded-xl border bg-card p-5 shadow-sm'>

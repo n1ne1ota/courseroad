@@ -4,8 +4,8 @@ import { useState } from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@courseroad/kurume-ui';
 
-import { ImageUpload } from '@/features/media/image-upload';
-import { VideoUpload } from '@/features/media/video-upload';
+import { ImageUpload } from '@/features/media/components/image-upload';
+import { VideoUpload } from '@/features/media/components/video-upload';
 
 export default function UploadDemoPage() {
   const [videoUrl, setVideoUrl] = useState<string>('');

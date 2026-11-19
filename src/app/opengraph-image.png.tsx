@@ -1,6 +1,7 @@
 import { ImageResponse } from 'next/og';
 
 import { globalData } from '@/lib/config/data';
+import { COLORS } from '@/lib/constants/colors';
 
 export const size = {
   height: 630,
@@ -14,8 +15,8 @@ export default async function OpengraphImage() {
     <div
       style={{
         alignItems: 'center',
-        background: 'linear-gradient(135deg, #111827 0%, #1f2937 50%, #111827 100%)',
-        color: 'white',
+        background: `linear-gradient(135deg, ${COLORS.hex['zinc-950']} 0%, ${COLORS.hex['zinc-900']} 50%, ${COLORS.hex['zinc-950']} 100%)`,
+        color: COLORS.white,
         display: 'flex',
         fontSize: 96,
         fontWeight: 800,

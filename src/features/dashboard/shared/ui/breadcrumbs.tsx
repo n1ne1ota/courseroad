@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 import * as core from '@courseroad/kurume-ui';
+
 import { Home } from 'lucide-react';
 
 const SEGMENT_MAPPINGS: Record<string, string> = {
@@ -69,10 +70,8 @@ export function Breadcrumbs(): JSX.Element | null {
     <core.Breadcrumbs>
       <core.BreadcrumbsList>
         <core.BreadcrumbsItem>
-          <core.BreadcrumbsLink asChild>
-            <Link href={'/dashboard' as Route}>
-              <Home className='size-3.5' />
-            </Link>
+          <core.BreadcrumbsLink render={<Link href={'/dashboard' as Route} />} aria-label='Dashboard'>
+            <Home className='size-3.5' />
           </core.BreadcrumbsLink>
         </core.BreadcrumbsItem>
 
@@ -90,10 +89,8 @@ export function Breadcrumbs(): JSX.Element | null {
               <core.BreadcrumbsSeparator />
               <core.BreadcrumbsItem>
                 {canLink ? (
-                  <core.BreadcrumbsLink asChild>
-                    <Link className='line-clamp-1' href={href}>
-                      {label}
-                    </Link>
+                  <core.BreadcrumbsLink render={<Link className='line-clamp-1' href={href} />}>
+                    {label}
                   </core.BreadcrumbsLink>
                 ) : (
                   <core.BreadcrumbsPage className='line-clamp-1'>{label}</core.BreadcrumbsPage>

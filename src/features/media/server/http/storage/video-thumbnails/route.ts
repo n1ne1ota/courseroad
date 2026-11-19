@@ -4,11 +4,14 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
 import { detectBot, slidingWindow } from '@arcjet/next';
+import { z } from 'zod';
 
+import { videoThumbnailPath } from '@/lib/media/storage-layout';
 import { getRequestIdFromRequest } from '@/lib/utils/request-id';
 
+import { resolveMediaContext } from '@/features/media/server/media-context';
+import { requireUploadContext } from '@/features/media/server/upload-access';
 import { auth } from '@/server/auth/auth';
-import { getOrganizationContext } from '@/server/auth/organization-context';
 import { AccessError } from '@/server/auth/session';
 import { env } from '@/server/config/env';
 import { logs } from '@/server/logging/server';
@@ -41,19 +44,10 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { organizationId } = await getOrganizationContext(
-            req.headers.get('x-organization-slug') ?? undefined,
-            'creator'
+        const { organizationId, owner } = await requireUploadContext(
+            user,
+            req.headers.get('x-organization-slug') ?? undefined
         );
-        if (!organizationId) {
-            logs.upload.warn('Video thumbnail upload rejected: no active organization', {
-                action: 'upload_no_org',
-                requestId,
-                uploadType: 'video-thumbnail',
-                userId: user.id
-            });
-            return NextResponse.json({ error: 'No active organization' }, { status: 403 });
-        }
 
         const decision = await arcjet
             .withRule(detectBot({ allow: [], mode: 'LIVE' }))
@@ -84,14 +78,14 @@ export async function POST(req: NextRequest) {
         const file = form.get('file');
         const videoId = (form.get('videoId') as string) || '';
 
-        if (!videoId) {
+        if (!z.uuid().safeParse(videoId).success) {
             logs.upload.warn('Video thumbnail upload validation failed: missing videoId', {
                 action: 'validation_failed',
                 requestId,
                 uploadType: 'video-thumbnail',
                 userId: user.id
             });
-            return NextResponse.json({ error: 'Missing videoId' }, { status: 400 });
+            return NextResponse.json({ error: 'Invalid videoId' }, { status: 400 });
         }
 
         assertValidImageFile(file);
@@ -103,7 +97,7 @@ export async function POST(req: NextRequest) {
             videoId
         };
 
-        logs.upload.info('Video thumbnail validated', {
+        logs.upload.debug('Video thumbnail validated', {
             action: 'file_validated',
             fileMetadata,
             requestId,
@@ -111,7 +105,11 @@ export async function POST(req: NextRequest) {
             userId: user.id
         });
 
-        const path = `${organizationId}/video-thumbnails/${videoId}.jpg`;
+        const context = await resolveMediaContext(
+            { courseId: form.get('courseId'), lessonId: form.get('lessonId'), quizId: undefined },
+            { organizationId, userId: user.id }
+        );
+        const path = videoThumbnailPath(owner, videoId, context);
         const bufferStartTime = Date.now();
         const buffer = Buffer.from(await file.arrayBuffer());
         const bufferTime = Date.now() - bufferStartTime;
@@ -129,7 +127,7 @@ export async function POST(req: NextRequest) {
 
         const target = STORAGE_UPLOAD_URL(path);
 
-        logs.upload.info('Video thumbnail upload to Bunny storage starting', {
+        logs.upload.debug('Video thumbnail upload to Bunny storage starting', {
             action: 'bunny_upload_start',
             fileMetadata,
             requestId,

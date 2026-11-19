@@ -1,67 +1,25 @@
 'use client';
 
-import { useTheme } from 'next-themes';
-
-import { useInView } from '@/hooks/use-in-view';
-import { COLORS } from '@/lib/constants/colors';
+import { Card } from '@courseroad/iota-ui';
 
 import { SwissFlagIcon } from '@/assets/icons/swiss-flag-icon';
-import { BackgroundPixelBlast } from '@courseroad/kurume-ui/animations';
 
 import { HeroButtons } from './hero-buttons';
 
-// PixelBlast color tokens
-// Electric blue matches --primary-500 (#0054ff)
-const PIXEL_COLOR_DARK = COLORS.primary;
-const PIXEL_COLOR_LIGHT = COLORS.primary;
-
-// PixelBlast animation config
-const pixelBlastConfig = {
-  darkModeColor: PIXEL_COLOR_DARK,
-  edgeFade: 0.5,
-  lightModeColor: PIXEL_COLOR_LIGHT,
-  maxFPS: 24,
-  patternDensity: 1.5,
-  patternScale: 3,
-  pixelSize: 4,
-  pixelSizeJitter: 0,
-  resolutionScale: 0.5,
-  rippleIntensityScale: 1.5,
-  rippleSpeed: 0.5,
-  rippleThickness: 0.1,
-  speed: 0.5
-} as const;
-
 /**
- * Hero section for the landing page
- * Contains the main headline, description, and contextual buttons
- * Shows Dashboard/Account button for logged-in users, Sign In/Sign Up for guests
+ * Hero section for the landing page.
+ * Contains the main headline, description, and contextual buttons inside Iota's frosted-glass `Card`.
  */
 export function Hero() {
-  const { theme } = useTheme();
-  const { inView, ref } = useInView({ once: true, threshold: 0.1 });
-
   return (
-    <>
-      {/* Interactive background behind all UI */}
-      <div className='fixed inset-0 z-0'>
-        <BackgroundPixelBlast
-          enableRipples
-          pauseWhenHidden
-          transparent
-          useThemeColors
-          theme={theme}
-          variant='square'
-          {...pixelBlastConfig}
-        />
-      </div>
-
-      {/* Hero content */}
-      <div className='relative z-20 flex flex-1 items-center justify-center px-4 sm:px-6'>
-        <div
-          ref={ref}
-          className='mx-auto flex w-full max-w-3xl flex-col items-center gap-8 rounded-3xl border border-white/10 bg-background/10 p-8 pt-10 text-center shadow-2xl backdrop-blur-sm transition-all duration-1000 ease-out data-[in-view=false]:translate-y-8 data-[in-view=false]:opacity-0 data-[in-view=true]:translate-y-0 data-[in-view=true]:opacity-100 sm:p-12 sm:pt-14 dark:border-white/5'
-          data-in-view={inView}
+    // The interactive background is mounted once in the `(public)` layout (see `LandingBackground`).
+    <div className='relative z-20 flex flex-1 items-center justify-center px-6 py-10 sm:py-12 lg:px-8'>
+      {/* Never fade this wrapper: opacity < 1 on an ancestor disables the Card's backdrop-filter, so the animation lives on the Card itself. */}
+      <div className='mx-auto w-full max-w-3xl'>
+        <Card
+          className='animate-public-card-enter items-center gap-8 p-8 pt-10 text-center sm:p-12 sm:pt-14'
+          shadow='xl'
+          variant='frosted-glass'
         >
           <div className='flex items-center gap-2.5 rounded-full border border-border/80 bg-background/80 px-4 py-2 shadow-md ring-1 ring-border/20 backdrop-blur-md transition-all hover:bg-background hover:shadow-lg'>
             <SwissFlagIcon size={20} />
@@ -76,8 +34,8 @@ export function Hero() {
           </div>
 
           <HeroButtons />
-        </div>
+        </Card>
       </div>
-    </>
+    </div>
   );
 }

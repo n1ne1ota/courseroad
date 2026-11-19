@@ -8,39 +8,37 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button, Card, Checkbox, Chip, Input, Spinner, TabsLine } from '@courseroad/iota-ui';
 import { Alert, AlertDescription } from '@courseroad/kurume-ui';
-import { Letter as LetterIcon } from '@solar-icons/react-perf/Bold';
-import { AltArrowLeft as ArrowLeftIcon, KeyMinimalistic as PasskeyIcon } from '@solar-icons/react-perf/Linear';
+
+import { LetterIcon } from '@solar-icons/react/bold';
+import { AltArrowLeftIcon as ArrowLeftIcon, KeyMinimalisticIcon as PasskeyIcon } from '@solar-icons/react/linear';
 import { AnimatePresence, motion } from 'motion/react';
 
 import {
+  otpPending,
   preloadPasskeyAutofill,
+  sendOtpVerificationEmail,
   signInWithEmail,
-  signInWithGitHub,
   signInWithGoogle,
   signInWithMagicLink,
   signInWithPasskey
 } from '@/lib/auth/auth-client';
-import { getCallbackUrl } from '@/lib/auth/callback-url';
+import { createAuthUrl, getCallbackUrl } from '@/lib/auth/callback-url';
 import { useLastLoginMethod } from '@/lib/auth/use-last-login-method';
 import { usePasskeySupported } from '@/lib/auth/use-passkey-support';
 import { routes } from '@/lib/routes';
 
-import { GitHubIcon } from '@/assets/icons/github-icon';
 import { GoogleColorIcon as GoogleIcon } from '@/assets/icons/google-icon';
 
 import { HomeButton } from './home-button';
 
-type LastUsedBadgeVariant = 'primary' | 'secondary';
-
-function LastUsedBadge({ variant }: { variant: LastUsedBadgeVariant }) {
+function LastUsedBadge() {
   return (
     <div className='pointer-events-none absolute inset-0 z-10 overflow-visible' aria-hidden>
       <Chip
-        className={`absolute top-0 right-0 translate-x-1/4 -translate-y-1/2 px-1.5 py-0 text-[10px] leading-tight font-medium ${
-          variant === 'primary' ? 'bg-white/20 text-white' : ''
-        }`}
-        color={variant === 'secondary' ? 'primary' : undefined}
-        variant='flat'
+        className='absolute top-0 right-0 translate-x-1/4 -translate-y-1/2'
+        color='primary'
+        size='sm'
+        variant='soft'
       >
         Last used
       </Chip>
@@ -64,7 +62,6 @@ export function SignInForm() {
 
   const [isEmailPending, startEmailTransition] = useTransition();
   const [isGooglePending, startGoogleTransition] = useTransition();
-  const [isGitHubPending, startGitHubTransition] = useTransition();
   const [isPasskeyPending, startPasskeyTransition] = useTransition();
   const passkeySupported = usePasskeySupported();
   const lastLoginMethod = useLastLoginMethod();
@@ -100,9 +97,18 @@ export function SignInForm() {
       const result = await signInWithEmail(email, password);
 
       if (!result.success) {
+        if (result.error?.code === 'EMAIL_NOT_VERIFIED') {
+          const verification = await sendOtpVerificationEmail(email);
+          if (verification.success) {
+            otpPending.setEmail(email);
+            router.push(createAuthUrl(routes.otp, callbackUrl) as Route);
+            return;
+          }
+        }
         setError(result.error?.message || 'An error occurred. Please try again.');
         return;
       }
+      if (result.data?.twoFactorRedirect) return;
       router.push(callbackUrl as Route);
     });
   };
@@ -110,12 +116,6 @@ export function SignInForm() {
   const handleGoogleSignIn = () => {
     startGoogleTransition(async () => {
       await signInWithGoogle(callbackUrl);
-    });
-  };
-
-  const handleGitHubSignIn = () => {
-    startGitHubTransition(async () => {
-      await signInWithGitHub(callbackUrl);
     });
   };
 
@@ -159,7 +159,7 @@ export function SignInForm() {
                     fullWidth
                     options={loginModeOptions}
                     value={loginMode}
-                    variant='secondary'
+                    variant='brand'
                     onValueChange={val => {
                       setError(null);
                       setLoginMode(val);
@@ -193,7 +193,7 @@ export function SignInForm() {
                           label='Password'
                         />
                         <div className='flex w-full items-center justify-between px-1 py-2'>
-                          <Checkbox name='remember' size='sm'>
+                          <Checkbox name='remember' color='brand' size='sm'>
                             Remember me
                           </Checkbox>
                           <Link className='text-link text-sm' href={routes.resetPassword}>
@@ -225,8 +225,8 @@ export function SignInForm() {
                       <Button
                         type='button'
                         fullWidth
-                        color='secondary'
                         startContent={<ArrowLeftIcon className='text-muted-foreground' size={18} />}
+                        variant='secondary'
                         onPress={() => setShowEmailForm(false)}
                       >
                         Back
@@ -237,8 +237,8 @@ export function SignInForm() {
                       <Button
                         className='flex-1'
                         type='button'
-                        color='secondary'
                         startContent={<ArrowLeftIcon className='text-muted-foreground' size={18} />}
+                        variant='secondary'
                         onPress={() => setShowEmailForm(false)}
                       >
                         Back
@@ -246,7 +246,7 @@ export function SignInForm() {
                       <Button
                         className='flex-1'
                         type='submit'
-                        color='primary'
+                        color='brand'
                         isLoading={isEmailPending}
                         spinner={<Spinner color='current' size='sm' />}
                       >
@@ -275,17 +275,15 @@ export function SignInForm() {
                   <Button
                     type='button'
                     fullWidth
-                    color='primary'
+                    color='brand'
                     startContent={<LetterIcon className='pointer-events-none' size={20} />}
                     onPress={() => setShowEmailForm(true)}
                   >
                     Continue with Email
                   </Button>
-                  {(lastLoginMethod === 'email' || lastLoginMethod === 'magic-link') && (
-                    <LastUsedBadge variant='primary' />
-                  )}
+                  {(lastLoginMethod === 'email' || lastLoginMethod === 'magic-link') && <LastUsedBadge />}
                 </div>
-                <div className='flex items-center gap-4 py-2'>
+                <div className='flex items-center gap-4'>
                   <hr className='flex-1 border-t border-border' />
                   <p className='shrink-0 text-xs text-muted-foreground'>OR</p>
                   <hr className='flex-1 border-t border-border' />
@@ -294,48 +292,35 @@ export function SignInForm() {
                   <div className='relative isolate'>
                     <Button
                       fullWidth
-                      color='secondary'
                       isLoading={isGooglePending}
                       spinner={<Spinner color='current' size='sm' />}
                       startContent={!isGooglePending && <GoogleIcon height={24} width={24} />}
+                      variant='secondary'
                       onPress={handleGoogleSignIn}
                     >
                       {isGooglePending ? 'Signing In' : 'Continue with Google'}
                     </Button>
-                    {lastLoginMethod === 'google' && <LastUsedBadge variant='secondary' />}
-                  </div>
-                  <div className='relative isolate'>
-                    <Button
-                      fullWidth
-                      color='secondary'
-                      isLoading={isGitHubPending}
-                      spinner={<Spinner color='current' size='sm' />}
-                      startContent={!isGitHubPending && <GitHubIcon height={24} width={24} />}
-                      onPress={handleGitHubSignIn}
-                    >
-                      {isGitHubPending ? 'Signing In' : 'Continue with GitHub'}
-                    </Button>
-                    {lastLoginMethod === 'github' && <LastUsedBadge variant='secondary' />}
+                    {lastLoginMethod === 'google' && <LastUsedBadge />}
                   </div>
                   {passkeySupported && (
                     <div className='relative isolate'>
                       <Button
                         fullWidth
-                        color='secondary'
                         isLoading={isPasskeyPending}
                         spinner={<Spinner color='current' size='sm' />}
                         startContent={!isPasskeyPending && <PasskeyIcon height={24} width={24} />}
+                        variant='secondary'
                         onPress={handlePasskeySignIn}
                       >
                         {isPasskeyPending ? 'Authenticating' : 'Continue with Passkey'}
                       </Button>
-                      {lastLoginMethod === 'passkey' && <LastUsedBadge variant='secondary' />}
+                      {lastLoginMethod === 'passkey' && <LastUsedBadge />}
                     </div>
                   )}
                 </div>
                 <p className='mt-3 text-center text-sm'>
                   Need to create an account?&nbsp;
-                  <Link className='text-link text-sm' href={routes.signUp}>
+                  <Link className='text-link text-sm' href={createAuthUrl(routes.signUp, callbackUrl) as Route}>
                     Sign Up
                   </Link>
                 </p>

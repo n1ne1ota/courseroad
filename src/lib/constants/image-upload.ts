@@ -2,7 +2,7 @@ import crypto from 'node:crypto';
 
 /**
  * Scope-specific path segment for each image upload type.
- * The organizationId prefix is prepended at build time via `buildStoragePath()`.
+ * The verified ownership prefix is prepended via `buildStoragePath()`.
  */
 export const IMAGE_UPLOAD_SCOPES = {
     avatar: {

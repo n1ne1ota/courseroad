@@ -3,11 +3,11 @@
 import type { ChangeEvent } from 'react';
 import { useEffect, useState } from 'react';
 
-import { currencies } from '@/lib/config/data';
-
 import { ButtonGroup } from '@courseroad/kurume-ui';
 import { Input } from '@courseroad/kurume-ui';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@courseroad/kurume-ui';
+
+import { currencies } from '@/lib/config/data';
 
 interface PriceInputProps {
   id?: string;
@@ -75,8 +75,15 @@ export function PriceInput({ id, min = 0, onChange, value }: PriceInputProps) {
 
   return (
     <ButtonGroup>
-      <Select value={currency} onValueChange={setCurrency}>
-        <SelectTrigger className='font-mono'>{currency}</SelectTrigger>
+      <Select
+        value={currency}
+        onValueChange={next => {
+          if (next !== null) setCurrency(next);
+        }}
+      >
+        <SelectTrigger className='font-mono' aria-label='Currency'>
+          {currency}
+        </SelectTrigger>
         <SelectContent className='min-w-24'>
           {currencies.map(currency => (
             <SelectItem key={currency.value} value={currency.value}>

@@ -4,6 +4,7 @@ import type { Route } from 'next';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
+import { createAuthUrl, getCallbackUrl } from '@/lib/auth/callback-url';
 import { protectedRoutes } from '@/lib/routes';
 
 import { auth } from '@/server/auth/auth';
@@ -21,16 +22,12 @@ import { prismaClient } from '@/server/db/client';
  */
 export async function GET(request: Request) {
     const session = await auth.api.getSession({ headers: await headers() });
-
-    if (!session?.user) redirect('/sign-in' as Route);
+    const { searchParams } = new URL(request.url);
+    const callbackUrl = getCallbackUrl(searchParams, '');
+    if (!session?.user) redirect(createAuthUrl('/sign-in', callbackUrl) as Route);
 
     // Invite link bypass: callbackUrl takes priority when present and safe
-    const { searchParams } = new URL(request.url);
-    const callbackUrl = searchParams.get('callbackUrl');
-
-    if (callbackUrl && (callbackUrl.startsWith('/organization/') || callbackUrl.startsWith('/api/auth/'))) {
-        redirect(callbackUrl as Route);
-    }
+    if (callbackUrl) redirect(callbackUrl as Route);
 
     const role = session.user.role;
 

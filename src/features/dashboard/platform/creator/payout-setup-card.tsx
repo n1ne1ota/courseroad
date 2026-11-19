@@ -6,6 +6,8 @@ import { useState, useTransition } from 'react';
 import { Badge, Button, Separator } from '@kurume-ui/core';
 import { CreditCard, ExternalLink } from 'lucide-react';
 
+import { env } from '@/lib/config/env';
+
 import {
   getCreatorStripeDashboardLink,
   startCreatorStripeOnboarding
@@ -28,23 +30,23 @@ function resolveStatus(stripeAccountId: string | null, onboardingComplete: boole
 const statusConfig: Record<
   StripeConnectStatus,
   {
-    badge: 'default' | 'destructive' | 'outline' | 'secondary';
+    badge: { color?: 'destructive' | 'success'; variant?: 'secondary' };
     description: string;
     label: string;
   }
 > = {
   complete: {
-    badge: 'default',
+    badge: { color: 'success' },
     description: 'Your Stripe account is fully connected and ready to receive direct payouts.',
     label: 'Connected'
   },
   not_started: {
-    badge: 'destructive',
+    badge: { color: 'destructive' },
     description: 'Connect a Stripe Express account to start receiving direct payouts from your course sales.',
     label: 'Not Connected'
   },
   pending: {
-    badge: 'secondary',
+    badge: { variant: 'secondary' },
     description: 'Stripe onboarding started but not yet completed. Continue onboarding to enable direct payouts.',
     label: 'Pending'
   }
@@ -99,6 +101,9 @@ export function PayoutSetupCard({
     });
   };
 
+  if (!env.NEXT_PUBLIC_PAYMENTS_ENABLED)
+    return <p role='status'>Payments and payouts are not enabled in this environment.</p>;
+
   return (
     <div className='space-y-4'>
       <div className='space-y-1'>
@@ -117,14 +122,14 @@ export function PayoutSetupCard({
             <div className='space-y-1'>
               <div className='flex items-center gap-2'>
                 <h4 className='font-medium text-foreground'>Direct Payout Account</h4>
-                <Badge variant={config.badge}>{config.label}</Badge>
+                <Badge {...config.badge}>{config.label}</Badge>
               </div>
               <p className='text-sm text-muted-foreground'>{config.description}</p>
             </div>
           </div>
         </div>
 
-        <Separator className='border-default-200/50 my-4' />
+        <Separator className='border-default-200/50 my-4' role='presentation' />
 
         <div className='flex flex-wrap items-center justify-between gap-4'>
           <div className='space-y-1'>
@@ -135,7 +140,7 @@ export function PayoutSetupCard({
           </div>
 
           {status === 'not_started' && (
-            <Button disabled={isPending} isLoading={isPending} variant='default' onClick={handleConnect}>
+            <Button disabled={isPending} isLoading={isPending} onClick={handleConnect}>
               <CreditCard className='mr-2 size-4' />
               Connect Stripe
             </Button>

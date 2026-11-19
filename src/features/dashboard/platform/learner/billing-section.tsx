@@ -4,11 +4,18 @@ import type { JSX } from 'react';
 import { useState, useTransition } from 'react';
 
 import { Button } from '@courseroad/iota-ui';
+
 import { Alert, AlertDescription } from '@kurume-ui/core';
 import { CreditCard, Download, FileText, Loader2 } from 'lucide-react';
 
-import type { PurchaseItem } from '@/features/payment/types';
-export type { PurchaseItem } from '@/features/payment/types';
+import {
+  historyPanelClass,
+  historyPanelHeaderClass,
+  metricCardClass
+} from '@/features/dashboard/shared/ui/dashboard-surfaces';
+
+import type { PurchaseItem } from '@/features/payment/types/types';
+export type { PurchaseItem } from '@/features/payment/types/types';
 
 interface BillingSectionProps {
   purchases: PurchaseItem[];
@@ -45,11 +52,11 @@ export function BillingSection({ purchases }: BillingSectionProps): JSX.Element 
   return (
     <div className='flex flex-col gap-6'>
       {/* Overview Card */}
-      <div className='border-default-200/50 relative overflow-hidden rounded-3xl border bg-background/40 p-8 shadow-sm backdrop-blur-md'>
-        <div className='pointer-events-none absolute -top-24 -right-24 size-48 rounded-full bg-primary/10 blur-3xl' />
+      <div className={metricCardClass}>
+        <div className='pointer-events-none absolute -top-24 -right-24 size-48 rounded-full bg-brand/10 blur-3xl' />
         <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
           <div className='flex items-center gap-4'>
-            <div className='flex size-12 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary'>
+            <div className='flex size-12 shrink-0 items-center justify-center rounded-2xl bg-brand/10 text-brand'>
               <CreditCard className='size-6' />
             </div>
             <div>
@@ -67,8 +74,8 @@ export function BillingSection({ purchases }: BillingSectionProps): JSX.Element 
       )}
 
       {/* Invoice History */}
-      <div className='border-default-200/50 overflow-hidden rounded-3xl border bg-background/30 shadow-sm backdrop-blur-md'>
-        <div className='border-default-200/50 border-b bg-muted/20 px-6 py-5'>
+      <div className={historyPanelClass}>
+        <div className={historyPanelHeaderClass}>
           <h4 className='text-base font-bold text-foreground'>Billing History</h4>
         </div>
 
@@ -113,9 +120,9 @@ export function BillingSection({ purchases }: BillingSectionProps): JSX.Element 
                       <td className='px-6 py-4 text-right whitespace-nowrap'>
                         <Button
                           className='rounded-xl'
-                          color='secondary'
                           disabled={isPending && loadingId !== null}
                           size='sm'
+                          variant='secondary'
                           onPress={() => handleDownloadReceipt(purchase.id, purchase.isPlatform)}
                         >
                           {isPending && loadingId === purchase.id ? (

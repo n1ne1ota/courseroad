@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { getQuizForLearner } from '@/features/quiz/server/repositories/queries';
+import { getQuizForLearner } from '@/features/quiz/server/db/queries';
 import { missingResource } from '@/server/auth/read-errors';
 import { prismaClient } from '@/server/db/client';
 

@@ -1,4 +1,4 @@
-import type { DashboardTableRow } from '@/features/dashboard/shared/schemas';
+import type { DashboardTableRow } from '@/features/dashboard/shared/schemas/schemas';
 
 export type ExportCsvColumns = Array<keyof DashboardTableRow>;
 

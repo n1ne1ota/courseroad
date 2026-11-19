@@ -43,7 +43,7 @@ export function EnrolledCourseCard({
   const learnUrl = orgRoutes ? orgRoutes.learn(courseId) : ('#' as Route);
 
   return (
-    <div className='group border-default-200/50 relative flex h-full animate-in flex-col overflow-hidden rounded-2xl border bg-background/50 shadow-sm backdrop-blur-md transition-all duration-500 fade-in slide-in-from-bottom-4 hover:-translate-y-1 hover:border-primary/50 hover:shadow-primary/10'>
+    <div className='group border-default-200/50 relative flex h-full animate-in flex-col overflow-hidden rounded-2xl border bg-background/50 shadow-sm backdrop-blur-md transition-all duration-500 fade-in slide-in-from-bottom-4 hover:-translate-y-1 hover:border-brand/50 hover:shadow-brand/10'>
       {/* Thumbnail Section */}
       <div className='bg-default-100 relative aspect-video w-full overflow-hidden'>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -66,7 +66,7 @@ export function EnrolledCourseCard({
             </div>
           )}
           {status === 'IN_PROGRESS' && (
-            <div className='flex items-center gap-1.5 rounded-full bg-primary/90 px-2.5 py-1 text-xs font-medium text-primary-foreground shadow-sm backdrop-blur-md'>
+            <div className='flex items-center gap-1.5 rounded-full bg-brand/90 px-2.5 py-1 text-xs font-medium text-brand-foreground shadow-sm backdrop-blur-md'>
               <BookOpen className='size-3.5' />
               In Progress
             </div>
@@ -79,7 +79,7 @@ export function EnrolledCourseCard({
 
       {/* Content Section */}
       <div className='flex flex-1 flex-col p-5'>
-        <h3 className='line-clamp-2 text-lg leading-tight font-semibold tracking-tight text-foreground transition-colors group-hover:text-primary'>
+        <h3 className='line-clamp-2 text-lg leading-tight font-semibold tracking-tight text-foreground transition-colors group-hover:text-brand'>
           {title}
         </h3>
 
@@ -99,7 +99,7 @@ export function EnrolledCourseCard({
             <div
               className={cn(
                 'h-full rounded-full transition-all duration-1000 ease-in-out',
-                isCompleted ? 'bg-success' : 'bg-primary'
+                isCompleted ? 'bg-success' : 'bg-brand'
               )}
               style={{ width: `${progressPercentage}%` }}
             />
@@ -109,7 +109,7 @@ export function EnrolledCourseCard({
 
       {/* Clickable Overlay */}
       <Link
-        className='absolute inset-0 z-20 rounded-2xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none'
+        className='absolute inset-0 z-20 rounded-2xl focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none'
         href={learnUrl}
         aria-label={`Continue learning ${title}`}
       />

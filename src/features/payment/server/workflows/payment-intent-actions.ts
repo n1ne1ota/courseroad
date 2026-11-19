@@ -6,7 +6,7 @@ import { requireCoursePurchase } from '@/features/payment/server/access';
 import { createSafeAction } from '@/server/actions/create-safe-action';
 import { requireAuthAction } from '@/server/auth/require-auth-action';
 import { prismaClient as prisma } from '@/server/db/client';
-import { stripe } from '@/server/payments/payments';
+import { getStripe } from '@/server/payments/payments';
 
 export const createPaymentIntent = createSafeAction(
     z.object({
@@ -22,8 +22,9 @@ export const createPaymentIntent = createSafeAction(
         }
 
         // Validate the course and get its price
+        const stripe = getStripe();
         const course = await prisma.course.findUnique({
-            select: { id: true, price: true, status: true },
+            select: { id: true, price: true, status: true, visibility: true },
             where: { id: courseId }
         });
 
@@ -31,7 +32,7 @@ export const createPaymentIntent = createSafeAction(
             throw new Error('Course not found.');
         }
 
-        if (course.status !== 'Published') {
+        if (course.status !== 'Published' || course.visibility === 'Private') {
             throw new Error('This course is not available for purchase.');
         }
 

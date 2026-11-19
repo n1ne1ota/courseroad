@@ -3,9 +3,14 @@ import type { JSX } from 'react';
 import type { Route } from 'next';
 import Link from 'next/link';
 
+import { Card, Chip } from '@courseroad/iota-ui';
+
 import { BookOpen } from 'lucide-react';
 
 import { resolveThumbnailUrl } from '@/lib/api/cdn-url';
+import { cn } from '@/lib/utils/cn';
+
+import { courseCardClass } from '../lib/course-card-surfaces';
 
 export interface CourseCardProps {
   creatorName?: string | null;
@@ -32,9 +37,16 @@ export function CourseCard({
     price !== null && price !== undefined ? (price === 0 ? 'Free' : `$${(price / 100).toFixed(2)}`) : 'Free';
 
   return (
-    <div className='group border-default-200/50 relative flex h-full flex-col overflow-hidden rounded-2xl border bg-background/50 shadow-sm backdrop-blur-md transition-all duration-500 hover:-translate-y-1 hover:border-primary/50 hover:shadow-primary/10'>
+    <Card
+      className={cn(
+        courseCardClass,
+        'group transition-[border-color,transform] duration-300 hover:-translate-y-1 hover:border-brand/50'
+      )}
+      shadow='md'
+      variant='frosted-glass'
+    >
       {/* Thumbnail Section */}
-      <div className='bg-default-100 relative aspect-video w-full overflow-hidden'>
+      <div className='relative aspect-video w-full overflow-hidden bg-muted'>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           className='h-full w-full object-cover transition-transform duration-500 will-change-transform group-hover:scale-105'
@@ -48,36 +60,38 @@ export function CourseCard({
 
         {/* Price Badge */}
         <div className='absolute top-3 right-3 z-10 flex gap-2'>
-          <div className='flex items-center gap-1.5 rounded-full bg-background/90 px-2.5 py-1 text-xs font-semibold text-foreground shadow-sm backdrop-blur-md'>
+          <Chip color='default' radius='full' size='sm' variant='soft'>
             {displayPrice}
-          </div>
+          </Chip>
         </div>
       </div>
 
       {/* Content Section */}
       <div className='flex flex-1 flex-col p-5'>
-        <h3 className='line-clamp-2 text-lg leading-tight font-bold tracking-tight text-foreground transition-colors group-hover:text-primary'>
+        <h3 className='line-clamp-2 text-lg leading-tight font-semibold tracking-tight text-foreground transition-colors group-hover:text-brand'>
           {title}
         </h3>
 
-        {shortDescription && <p className='mt-2 line-clamp-2 text-sm text-muted-foreground'>{shortDescription}</p>}
+        {shortDescription ? (
+          <p className='mt-2 line-clamp-2 text-sm text-muted-foreground'>{shortDescription}</p>
+        ) : null}
 
         <div className='flex-1' />
 
         {/* Footer */}
         <div className='mt-5 flex items-center justify-between text-sm'>
-          {creatorName && <span className='font-medium text-foreground opacity-80'>by {creatorName}</span>}
-          <span className='flex items-center gap-1.5 font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100'>
+          {creatorName ? <span className='font-medium text-foreground/80'>by {creatorName}</span> : <span />}
+          <span className='flex items-center gap-1.5 font-medium text-brand opacity-0 transition-opacity group-hover:opacity-100'>
             View Course <BookOpen className='size-4' />
           </span>
         </div>
       </div>
 
       <Link
-        className='absolute inset-0 z-20 rounded-2xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none'
+        className='absolute inset-0 z-20 rounded-[inherit] focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none'
         href={`/courses/${id}` as Route}
         aria-label={`View course ${title}`}
       />
-    </div>
+    </Card>
   );
 }

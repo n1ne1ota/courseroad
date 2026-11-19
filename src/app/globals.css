@@ -1,5 +1,9 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@kurume-ui/theme/styles.css";
+@import "@kurume-ui/theme/tailwind.css";
+@import "@iota-ui/theme/styles.css";
+@import "@iota-ui/theme/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -8,25 +12,93 @@
 
 /*
  * DESIGN SYSTEM ARCHITECTURE
- * This project is migrating to a dual Custom UI approach powered by Vanilla CSS Modules:
- * • Iota UI   → Replaces HeroUI (Rich interactive components: navbars, modals, tabs)
- * • Kurume UI → Replaces shadcn/ui (Dashboard-style components: tables, commands, forms)
+ * This project uses a dual Custom UI architecture powered by Vanilla CSS Modules:
+ * • Iota UI   → Rich interactive primitives (navbars, modals, tabs, chips)
+ * • Kurume UI → Data-dense dashboard and workflow components (tables, commands, forms)
  * 
- * SINGLE SOURCE OF TRUTH: globals.css CSS custom properties
- * Both systems read from the exact same semantic token values defined there.
+ * @kurume-ui/theme and @iota-ui/theme own their scoped library tokens;
+ * @courseroad/theme/bridge.css maps app Tailwind utilities to Kurume tokens.
  */
-@import "../../../../ui/styles/colors.css";
-@import "../../../../ui/styles/typography.css";
-@import "../../../../ui/styles/radius.css";
-@import "../../../../ui/styles/shadows.css";
-@import "../../../../ui/styles/transitions.css";
-@import "../../../../ui/styles/z-index.css";
-@import "../../../../ui/styles/breakpoints.css";
-@import "../../../../ui/styles/theme.css";
-@import "../../../../ui/styles/base.css";
+@import "@courseroad/theme/bridge.css";
+
+body {
+    --kurume-font-sans: var(--font-sans);
+    --kurume-font-mono: var(--font-mono);
+    --iota-font-sans: var(--font-sans);
+    --iota-font-mono: var(--font-mono);
+}
+
+/**
+ * Base Layer & Utilities
+ * Global resets and custom Tailwind utility classes.
+ *
+ * Imported by: globals.css
+ */
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    /* Unify focus styling globally */
+    *:focus-visible {
+        outline: 2px solid var(--kurume-focus);
+        outline-offset: 2px;
+    }
+
+    /* Remove default browser focus outlines on click */
+    *:focus:not(:focus-visible) {
+        outline: none;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+/* Link styles are applied explicitly per-component via the .text-link utility class. */
+@utility text-link {
+    color: color-mix(in srgb, var(--kurume-brand) 80%, var(--kurume-purple-500) 20%);
+    text-underline-offset: 3px;
+    transition:
+        color 0.15s ease,
+        opacity 0.15s ease;
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+        opacity: var(--hover-dim-muted, 0.8);
+    }
+
+    &:visited {
+        color: color-mix(in srgb, var(--kurume-brand) 80%, var(--kurume-purple-500) 20%);
+    }
+}
 
 @keyframes sheen {
     100% {
         transform: translateX(100%);
+    }
+}
+
+/* Applied directly on frosted-glass Card elements (never on an ancestor wrapper) so backdrop-filter stays active during the fade. */
+@keyframes public-card-enter {
+    from {
+        opacity: 0;
+        transform: translateY(1rem);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@utility animate-public-card-enter {
+    animation: public-card-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-public-card-enter {
+        animation: none;
     }
 }

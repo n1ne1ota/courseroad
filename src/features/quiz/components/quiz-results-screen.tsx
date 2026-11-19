@@ -1,16 +1,17 @@
-﻿'use client';
+'use client';
 
 import type { JSX } from 'react';
 import { memo, useState } from 'react';
 
 import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle } from '@courseroad/kurume-ui';
 import { HtmlContent } from '@courseroad/kurume-ui/editor';
+
 import { CheckCircle2Icon, ChevronDownIcon, CircleXIcon, RotateCcwIcon, TrophyIcon } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 
 import { ShareButton } from '@/components/shared/share-button';
 
-import type { QuestionResult } from '@/features/quiz/submission-types';
+import type { QuestionResult } from '@/features/quiz/types/submission-types';
 
 interface ResultsScreenProps {
   onBack: () => void;
@@ -45,8 +46,8 @@ export const ResultsScreen = memo(function ResultsScreen({
         {/* Score hero card (3/5 width) */}
         <Card className='lg:col-span-3'>
           <CardContent className='pt-8 pb-6 text-center'>
-            <div className='mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10'>
-              <TrophyIcon className='h-10 w-10 text-primary' />
+            <div className='mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-brand/10'>
+              <TrophyIcon className='h-10 w-10 text-brand' />
             </div>
 
             <h2 className='text-2xl font-bold tracking-tight'>Quiz Complete!</h2>
@@ -65,12 +66,12 @@ export const ResultsScreen = memo(function ResultsScreen({
             {passingScore !== null && passed !== undefined && (
               <div className='mt-4 flex justify-center'>
                 {passed ? (
-                  <span className='inline-flex items-center gap-1.5 rounded-full bg-green-100 px-4 py-1.5 text-sm font-semibold text-green-700 dark:bg-green-900/30 dark:text-green-400'>
+                  <span className='inline-flex items-center gap-1.5 rounded-full bg-success/15 px-4 py-1.5 text-sm font-semibold text-success'>
                     <CheckCircle2Icon className='h-4 w-4' />
                     Passed — required {passingScore}%
                   </span>
                 ) : (
-                  <span className='inline-flex items-center gap-1.5 rounded-full bg-red-100 px-4 py-1.5 text-sm font-semibold text-red-700 dark:bg-red-900/30 dark:text-red-400'>
+                  <span className='inline-flex items-center gap-1.5 rounded-full bg-destructive/15 px-4 py-1.5 text-sm font-semibold text-destructive'>
                     <CircleXIcon className='h-4 w-4' />
                     Not Passed — required {passingScore}%
                   </span>
@@ -83,7 +84,7 @@ export const ResultsScreen = memo(function ResultsScreen({
               <div className='h-2.5 w-full overflow-hidden rounded-full bg-muted'>
                 <div
                   className={`h-full rounded-full transition-all duration-700 ${
-                    percentage >= 80 ? 'bg-green-500' : percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                    percentage >= 80 ? 'bg-success' : percentage >= 50 ? 'bg-warning' : 'bg-destructive'
                   }`}
                   style={{ width: `${percentage}%` }}
                 />
@@ -104,7 +105,7 @@ export const ResultsScreen = memo(function ResultsScreen({
             <Button variant='outline' onClick={onBack}>
               Back to Quizzes
             </Button>
-            <Button variant='primary' onClick={onRetake}>
+            <Button onClick={onRetake}>
               <RotateCcwIcon className='mr-2 h-4 w-4' />
               Try Again
             </Button>
@@ -119,11 +120,11 @@ export const ResultsScreen = memo(function ResultsScreen({
           <CardContent className='space-y-4'>
             <div className='flex items-center justify-between'>
               <span className='text-sm text-muted-foreground'>Correct</span>
-              <span className='text-sm font-semibold text-green-600 dark:text-green-400'>{correctCount}</span>
+              <span className='text-sm font-semibold text-success'>{correctCount}</span>
             </div>
             <div className='flex items-center justify-between'>
               <span className='text-sm text-muted-foreground'>Incorrect</span>
-              <span className='text-sm font-semibold text-red-600 dark:text-red-400'>{incorrectCount}</span>
+              <span className='text-sm font-semibold text-destructive'>{incorrectCount}</span>
             </div>
             <div className='flex items-center justify-between'>
               <span className='text-sm text-muted-foreground'>Total Questions</span>
@@ -143,9 +144,7 @@ export const ResultsScreen = memo(function ResultsScreen({
                     <div
                       key={r.questionId}
                       className={`flex h-7 w-7 items-center justify-center rounded-md text-xs font-semibold ${
-                        r.correct
-                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                        r.correct ? 'bg-success/15 text-success' : 'bg-destructive/15 text-destructive'
                       }`}
                     >
                       {i + 1}
@@ -187,16 +186,14 @@ export const ResultsScreen = memo(function ResultsScreen({
                     <div
                       key={result.questionId}
                       className={`rounded-xl border p-4 ${
-                        result.correct
-                          ? 'border-green-200 dark:border-green-900/50'
-                          : 'border-red-200 dark:border-red-900/50'
+                        result.correct ? 'border-success/30' : 'border-destructive/30'
                       }`}
                     >
                       <div className='flex items-start gap-3'>
                         {result.correct ? (
-                          <CheckCircle2Icon className='mt-0.5 h-5 w-5 shrink-0 text-green-500' />
+                          <CheckCircle2Icon className='mt-0.5 h-5 w-5 shrink-0 text-success' />
                         ) : (
-                          <CircleXIcon className='mt-0.5 h-5 w-5 shrink-0 text-red-500' />
+                          <CircleXIcon className='mt-0.5 h-5 w-5 shrink-0 text-destructive' />
                         )}
                         <div className='flex-1 space-y-1.5'>
                           <p className='text-xs font-medium text-muted-foreground'>Question {i + 1}</p>

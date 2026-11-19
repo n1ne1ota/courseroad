@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 
 import { KurumeError } from '@courseroad/kurume-ui';
+
 import { ErrorBoundary } from 'react-error-boundary';
 
 interface ErrorStateProps {

@@ -13,16 +13,14 @@ export async function LearnerCoursesView(): Promise<JSX.Element> {
   if (!dbUser) return <></>;
 
   return (
-    <div className='px-4 py-8 lg:px-6'>
-      <Card className='border-dashed'>
-        <CardHeader>
-          <CardTitle>Your Enrolled Courses</CardTitle>
-          <CardDescription>View and manage all the courses you&apos;re currently enrolled in</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className='text-muted-foreground'>You haven&apos;t enrolled in any courses yet.</p>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className='border-dashed'>
+      <CardHeader>
+        <CardTitle>Your Enrolled Courses</CardTitle>
+        <CardDescription>View and manage all the courses you&apos;re currently enrolled in</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p className='text-muted-foreground'>You haven&apos;t enrolled in any courses yet.</p>
+      </CardContent>
+    </Card>
   );
 }

@@ -13,18 +13,17 @@ type MembersViewProps = {
 };
 /** Authorized organization projection for MembersView. */
 export async function loadMembersView({ orgSlug }: MembersViewProps) {
-    await getOrganizationContext(orgSlug, 'manager');
+    const { organizationId, member } = await getOrganizationContext(orgSlug, 'manager');
+    const role = member.role;
+    if (role !== 'owner' && role !== 'manager') missingResource();
     const reqHeaders = await headers();
     const session = await getSession();
     if (!session?.user) destination('/sign-in' as Route);
     const fullOrg = await auth.api.getFullOrganization({
         headers: reqHeaders,
-        query: { organizationSlug: orgSlug }
+        query: { organizationId }
     });
     if (!fullOrg) missingResource();
-    const { member } = await getOrganizationContext(orgSlug);
-    const role = ((member?.role as string) ?? 'learner').toLowerCase();
-    if (role !== 'owner' && role !== 'manager') missingResource();
     const members = (fullOrg.members ?? []).map((m: Record<string, unknown>) => ({
         createdAt: String(m.createdAt ?? ''),
         email: String((m.user as Record<string, unknown>)?.email ?? ''),

@@ -2,8 +2,8 @@ import 'server-only';
 
 import { revalidatePath } from 'next/cache';
 
-import { insertQuizQuestionsSchema } from '@/features/quiz/schemas';
-import { saveQuizQuestions as saveQuizQuestionsMutation } from '@/features/quiz/server/repositories/mutations/index';
+import { insertQuizQuestionsSchema } from '@/features/quiz/schemas/schemas';
+import { saveQuizQuestions as saveQuizQuestionsMutation } from '@/features/quiz/server/db/mutations/index';
 import { createTenantFormAction } from '@/server/actions/create-tenant-action';
 import { getTenantPrisma } from '@/server/db/get-tenant-prisma';
 

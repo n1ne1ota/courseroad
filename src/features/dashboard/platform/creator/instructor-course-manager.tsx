@@ -2,12 +2,29 @@
 
 import type { JSX } from 'react';
 
+import type { Route } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
 
-import { Button } from '@courseroad/iota-ui';
-import { BookOpen, GraduationCap, LayoutGrid, Plus, Tag } from 'lucide-react';
+import {
+  Badge,
+  buttonVariants,
+  Card,
+  CardContent,
+  CardFooter,
+  CardInfo,
+  CardMedia,
+  CardMeta
+} from '@courseroad/kurume-ui';
 
-import { cn } from '@/lib/utils/cn';
+import { BookOpen, GraduationCap, Pencil } from 'lucide-react';
+
+import { resolveCdnUrl } from '@/lib/api/cdn-url';
+
+import { CreatorCourseModal } from '@/features/course/components/course-modal';
+import { workspaceGridClass } from '@/features/dashboard/shared/ui/dashboard-surfaces';
+
+import type { CourseStatus } from '@/features/course/schemas/course-schemas';
 
 export interface AuthoredCourse {
   _count: {
@@ -15,11 +32,11 @@ export interface AuthoredCourse {
   };
   category: string | null;
   createdAt: Date;
+  fileKey: string | null;
   id: string;
   level: string | null;
   price: number | null;
-  slug: string;
-  status: string;
+  status: CourseStatus;
   thumbnailFileName: string | null;
   title: string;
 }
@@ -28,122 +45,124 @@ interface InstructorCourseManagerProps {
   courses: AuthoredCourse[];
 }
 
-export function InstructorCourseManager({ courses }: InstructorCourseManagerProps): JSX.Element {
+const statusBadge = {
+  Archived: { variant: 'secondary' },
+  Draft: { color: 'warning' },
+  Published: { color: 'success' }
+} as const;
+const priceFormatter = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+const createdDateFormatter = new Intl.DateTimeFormat('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' });
+
+/** Section heading and create action; no data dependency, so the page renders it in the static shell. */
+export function InstructorCourseManagerHeader(): JSX.Element {
   return (
-    <div className='flex flex-col gap-6'>
-      <div className='flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between'>
-        <div>
-          <h3 className='text-lg font-bold text-foreground'>Authored Courses</h3>
-          <p className='text-sm text-muted-foreground'>
-            Manage your direct-to-consumer courses published on the marketplace.
-          </p>
-        </div>
-        <Button
-          className='flex items-center gap-2 self-start rounded-xl sm:self-auto'
-          color='primary'
-          onPress={() =>
-            alert('Course creation is managed via platform administration or will be available in the next release.')
-          }
-        >
-          <Plus className='size-4' />
-          <span>Create New Course</span>
-        </Button>
+    <div className='flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between'>
+      <div className='space-y-1'>
+        <h1 className='text-2xl font-semibold tracking-tight text-foreground sm:text-3xl'>Authored Courses</h1>
+        <p className='text-sm text-muted-foreground'>Manage your drafts and published marketplace courses.</p>
       </div>
+      <CreatorCourseModal scope='platform' triggerLabel='Create course' />
+    </div>
+  );
+}
 
-      {courses.length > 0 ? (
-        <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3'>
-          {courses.map(course => {
-            const displayPrice = course.price !== null ? `$${(course.price / 100).toFixed(2)}` : 'Free';
-            const displayDate = new Date(course.createdAt).toLocaleDateString(undefined, {
-              month: 'short',
-              year: 'numeric'
-            });
-
-            return (
-              <div
-                key={course.id}
-                className='border-default-200/50 flex flex-col justify-between rounded-3xl border bg-background/30 p-6 shadow-sm backdrop-blur-md transition-all hover:-translate-y-1 hover:bg-background/40 hover:shadow-md'
-              >
-                <div>
-                  <div className='mb-4 flex items-center justify-between gap-2'>
-                    <span
-                      className={cn(
-                        'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-wider uppercase',
-                        course.status === 'Published' && 'bg-success/15 text-success',
-                        course.status === 'Draft' && 'bg-warning/15 text-warning',
-                        course.status === 'Archived' && 'bg-default-200 text-muted-foreground'
-                      )}
-                    >
-                      {course.status}
-                    </span>
-                    <span className='text-xs text-muted-foreground'>{displayDate}</span>
-                  </div>
-
-                  <h4 className='mb-2 line-clamp-2 min-h-[3rem] text-base font-bold text-foreground'>{course.title}</h4>
-
-                  <div className='mb-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground'>
-                    {course.category && (
-                      <span className='inline-flex items-center gap-1 rounded-lg bg-muted/30 px-2 py-0.5'>
-                        <Tag className='size-3' />
-                        {course.category}
-                      </span>
-                    )}
-                    {course.level && (
-                      <span className='inline-flex items-center gap-1 rounded-lg bg-muted/30 px-2 py-0.5'>
-                        <LayoutGrid className='size-3' />
-                        {course.level}
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                <div className='border-default-200/50 mt-auto flex items-center justify-between border-t pt-4'>
-                  <div className='flex items-center gap-4'>
-                    <div className='flex items-center gap-1 text-sm font-semibold text-foreground'>
-                      <GraduationCap className='size-4 text-primary' />
-                      <span>{course._count.enrollments}</span>
-                    </div>
-                    <span className='text-sm font-bold text-foreground'>{displayPrice}</span>
-                  </div>
-
-                  <Link
-                    href='#'
-                    onClick={e => {
-                      e.preventDefault();
-                      alert('Course content editing will be linked in the next phase.');
-                    }}
-                  >
-                    <span className='cursor-pointer text-sm font-semibold text-primary hover:underline'>
-                      Manage Contents
-                    </span>
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
+export function InstructorCourseManager({ courses }: InstructorCourseManagerProps): JSX.Element {
+  if (!courses.length) {
+    return (
+      <div className='flex flex-col items-center rounded-xl border border-dashed border-border bg-card px-6 py-12 text-center'>
+        <div className='mb-4 grid size-12 place-items-center rounded-xl bg-muted text-muted-foreground'>
+          <BookOpen className='size-5' aria-hidden='true' />
         </div>
-      ) : (
-        <div className='border-default-200/50 flex flex-col items-center justify-center rounded-3xl border bg-background/30 p-16 text-center backdrop-blur-md'>
-          <div className='mb-4 flex size-14 items-center justify-center rounded-full bg-muted text-muted-foreground'>
-            <BookOpen className='size-7' />
-          </div>
-          <h5 className='text-base font-bold text-foreground'>No authored courses yet</h5>
-          <p className='mt-1 mb-6 max-w-sm text-sm text-muted-foreground'>
-            You haven&apos;t created any B2C courses on Courseroad yet. Launch your first course to share your
-            knowledge!
-          </p>
-          <Button
-            className='flex items-center gap-2 rounded-xl'
-            color='primary'
-            onPress={() =>
-              alert('Course creation is managed via platform administration or will be available in the next release.')
-            }
+        <h2 className='font-semibold text-foreground'>No authored courses yet</h2>
+        <p className='mt-1 mb-5 text-sm text-muted-foreground'>Create a course to start building your curriculum.</p>
+        <CreatorCourseModal scope='platform' triggerLabel='Create course' />
+      </div>
+    );
+  }
+
+  return (
+    <div className={workspaceGridClass}>
+      {courses.map(course => {
+        const displayPrice = course.price ? priceFormatter.format(course.price) : 'Free';
+        const createdAt = new Date(course.createdAt);
+        const cover = course.fileKey || course.thumbnailFileName;
+        const coverUrl = cover && (/^https?:\/\//i.test(cover) ? cover : resolveCdnUrl(cover));
+        const category =
+          course.category === 'health-fitness' ? 'Health & Fitness' : course.category?.replaceAll('-', ' ');
+
+        return (
+          <Card
+            key={course.id}
+            className='min-w-0 hover:shadow-md motion-safe:transition-shadow'
+            role='article'
+            size='sm'
           >
-            <Plus className='size-4' />
-            <span>Create a Course</span>
-          </Button>
-        </div>
-      )}
+            <CardMedia placeholder={<BookOpen aria-hidden='true' />}>
+              {coverUrl && (
+                <Image
+                  key={coverUrl}
+                  className='object-cover'
+                  fill
+                  unoptimized
+                  alt=''
+                  src={coverUrl}
+                  onError={event => {
+                    event.currentTarget.hidden = true;
+                  }}
+                />
+              )}
+            </CardMedia>
+
+            <CardContent className='flex flex-1 flex-col gap-stack'>
+              <div className='flex flex-wrap items-center justify-between gap-2'>
+                <Badge size='sm' {...statusBadge[course.status]}>
+                  {course.status}
+                </Badge>
+                <time className='text-xs text-muted-foreground' dateTime={createdAt.toISOString()}>
+                  Created {createdDateFormatter.format(createdAt)}
+                </time>
+              </div>
+              <h2 className='line-clamp-2 text-lg leading-tight font-semibold tracking-tight wrap-break-word'>
+                {course.title}
+              </h2>
+              {(category || course.level) && (
+                <div className='flex flex-wrap items-center gap-2'>
+                  {category && (
+                    <Badge className='max-w-full capitalize' size='sm' variant='outline'>
+                      <span className='truncate' title={category}>
+                        {category}
+                      </span>
+                    </Badge>
+                  )}
+                  {course.level && (
+                    <Badge size='sm' variant='outline'>
+                      {course.level}
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </CardContent>
+
+            <CardFooter>
+              <CardInfo>
+                <span className='tabular-nums'>{displayPrice}</span>
+                <CardMeta>
+                  <GraduationCap aria-hidden='true' />
+                  {course._count.enrollments.toLocaleString('en-US')} enrolled
+                </CardMeta>
+              </CardInfo>
+              <Link
+                className={buttonVariants({ size: 'sm', variant: 'outline' })}
+                href={`/creator/dashboard/courses/${course.id}` as Route}
+                aria-label={`Edit course: ${course.title}`}
+              >
+                <Pencil aria-hidden='true' />
+                Edit course
+              </Link>
+            </CardFooter>
+          </Card>
+        );
+      })}
     </div>
   );
 }

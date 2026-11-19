@@ -11,11 +11,14 @@ import { AccessError } from '@/server/auth/session';
 import { env } from '@/server/config/env';
 import { prismaClient as prisma } from '@/server/db/client';
 import { logs } from '@/server/logging/server';
-import { stripe } from '@/server/payments/payments';
+import { getStripe } from '@/server/payments/payments';
 
 import type { Stripe } from '@/server/payments/types';
 
 export async function POST(req: Request) {
+    if (env.NEXT_PUBLIC_PAYMENTS_ENABLED === false) {
+        return new NextResponse('Payments are not enabled in this environment.', { status: 503 });
+    }
     const session = await auth.api.getSession({
         headers: await headers()
     });
@@ -162,7 +165,7 @@ export async function POST(req: Request) {
             sessionParams.payment_intent_data = paymentIntentData;
         }
 
-        const stripeSession = await stripe.checkout.sessions.create(sessionParams);
+        const stripeSession = await getStripe().checkout.sessions.create(sessionParams);
 
         return NextResponse.json({ url: stripeSession.url });
     } catch (error) {

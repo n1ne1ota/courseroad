@@ -8,6 +8,13 @@ import Link from 'next/link';
 import { ArrowRight, BookOpen, Star } from 'lucide-react';
 
 import { resolveThumbnailUrl } from '@/lib/api/cdn-url';
+import { cn } from '@/lib/utils/cn';
+
+import {
+  CATALOG_PREVIEW_COUNT,
+  courseGridClass,
+  glassCardClass
+} from '@/features/dashboard/shared/ui/dashboard-surfaces';
 
 export interface CatalogCourse {
   category: string | null;
@@ -36,7 +43,7 @@ export function CatalogCarousel({ courses }: CatalogCarouselProps): JSX.Element 
           <p className='mt-1 text-sm text-muted-foreground'>Expand your skillset with these top-rated options.</p>
         </div>
         <Link
-          className='group flex items-center gap-1.5 text-sm font-semibold text-primary transition-colors hover:text-primary/80'
+          className='group flex items-center gap-1.5 text-sm font-semibold text-brand transition-colors hover:text-brand/80'
           href={'/courses' as Route}
         >
           View all
@@ -44,8 +51,8 @@ export function CatalogCarousel({ courses }: CatalogCarouselProps): JSX.Element 
         </Link>
       </div>
 
-      <div className='grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'>
-        {courses.slice(0, 4).map(course => {
+      <div className={courseGridClass}>
+        {courses.slice(0, CATALOG_PREVIEW_COUNT).map(course => {
           const imageUrl = resolveThumbnailUrl(course.thumbnailFileName);
           const displayPrice =
             course.price !== null && course.price !== undefined
@@ -57,7 +64,10 @@ export function CatalogCarousel({ courses }: CatalogCarouselProps): JSX.Element 
           return (
             <div
               key={course.id}
-              className='group border-default-200/50 relative flex h-full flex-col overflow-hidden rounded-2xl border bg-background/30 shadow-sm backdrop-blur-md transition-all duration-500 hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5'
+              className={cn(
+                glassCardClass,
+                'group h-full bg-background/30 transition-all duration-500 hover:-translate-y-1 hover:border-brand/50 hover:shadow-lg hover:shadow-brand/5'
+              )}
             >
               {/* Thumbnail */}
               <div className='bg-default-100 relative aspect-video w-full overflow-hidden'>
@@ -96,7 +106,7 @@ export function CatalogCarousel({ courses }: CatalogCarouselProps): JSX.Element 
                   <span>{course.level || 'Beginner'}</span>
                 </div>
 
-                <h4 className='mt-2 line-clamp-1 text-base font-bold text-foreground transition-colors group-hover:text-primary'>
+                <h4 className='mt-2 line-clamp-1 text-base font-bold text-foreground transition-colors group-hover:text-brand'>
                   {course.title}
                 </h4>
 
@@ -113,7 +123,7 @@ export function CatalogCarousel({ courses }: CatalogCarouselProps): JSX.Element 
                     <BookOpen className='size-3.5' />
                     <span>View Details</span>
                   </div>
-                  <div className='flex size-8 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform group-hover:translate-x-1'>
+                  <div className='flex size-8 items-center justify-center rounded-full bg-brand/10 text-brand transition-transform group-hover:translate-x-1'>
                     <ArrowRight className='size-4' />
                   </div>
                 </div>
@@ -121,7 +131,7 @@ export function CatalogCarousel({ courses }: CatalogCarouselProps): JSX.Element 
 
               {/* Link Overlay */}
               <Link
-                className='absolute inset-0 z-20 rounded-2xl focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none'
+                className='absolute inset-0 z-20 rounded-2xl focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none'
                 href={`/courses/${course.id}` as Route}
                 aria-label={`View ${course.title} details`}
               />

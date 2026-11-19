@@ -8,15 +8,15 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button, Card, Checkbox, Input, Spinner } from '@courseroad/iota-ui';
 import { Alert, AlertDescription } from '@courseroad/kurume-ui';
-import { Letter as LetterIcon } from '@solar-icons/react-perf/Bold';
-import { AltArrowLeft as ArrowLeftIcon } from '@solar-icons/react-perf/Linear';
+
+import { LetterIcon } from '@solar-icons/react/bold';
+import { AltArrowLeftIcon as ArrowLeftIcon } from '@solar-icons/react/linear';
 import { AnimatePresence, motion } from 'motion/react';
 
-import { signInWithGitHub, signInWithGoogle, signUpWithEmail } from '@/lib/auth/auth-client';
-import { getCallbackUrl } from '@/lib/auth/callback-url';
+import { signInWithGoogle, signUpWithEmail } from '@/lib/auth/auth-client';
+import { createAuthUrl, getCallbackUrl } from '@/lib/auth/callback-url';
 import { routes } from '@/lib/routes';
 
-import { GitHubIcon } from '@/assets/icons/github-icon';
 import { GoogleColorIcon as GoogleIcon } from '@/assets/icons/google-icon';
 
 import { HomeButton } from './home-button';
@@ -30,7 +30,6 @@ export function SignUpForm() {
 
   const [isEmailPending, startEmailTransition] = useTransition();
   const [isGooglePending, startGoogleTransition] = useTransition();
-  const [isGitHubPending, startGitHubTransition] = useTransition();
 
   const callbackUrl = getCallbackUrl(searchParams, '/api/auth/redirect');
 
@@ -50,19 +49,13 @@ export function SignUpForm() {
         setError(result.error?.message || 'An error occurred. Please try again.');
         return;
       }
-      router.push(routes.otp as Route);
+      router.push(createAuthUrl(routes.otp, callbackUrl) as Route);
     });
   };
 
   const handleGoogleSignIn = () => {
     startGoogleTransition(async () => {
       await signInWithGoogle(callbackUrl);
-    });
-  };
-
-  const handleGitHubSignIn = () => {
-    startGitHubTransition(async () => {
-      await signInWithGitHub(callbackUrl);
     });
   };
 
@@ -107,7 +100,7 @@ export function SignUpForm() {
                     label='Confirm Password'
                   />
                   <div className='flex py-2'>
-                    <Checkbox name='terms' required size='sm' />
+                    <Checkbox name='terms' required color='brand' size='sm' />
                     <p className='text-sm'>
                       I agree with the&nbsp;
                       <Link className='text-link text-sm' href={routes.terms}>
@@ -125,8 +118,8 @@ export function SignUpForm() {
                     <Button
                       className='flex-1'
                       type='button'
-                      color='secondary'
                       startContent={<ArrowLeftIcon className='text-muted-foreground' size={18} />}
+                      variant='secondary'
                       onPress={() => setShowEmailForm(false)}
                     >
                       Back
@@ -134,7 +127,7 @@ export function SignUpForm() {
                     <Button
                       className='flex-1'
                       type='submit'
-                      color='primary'
+                      color='brand'
                       isLoading={isEmailPending}
                       spinner={<Spinner color='current' size='sm' />}
                     >
@@ -155,13 +148,13 @@ export function SignUpForm() {
                 <Button
                   type='button'
                   fullWidth
-                  color='primary'
+                  color='brand'
                   startContent={<LetterIcon className='pointer-events-none' size={20} />}
                   onPress={() => setShowEmailForm(true)}
                 >
                   Continue with Email
                 </Button>
-                <div className='flex items-center gap-4 py-2'>
+                <div className='flex items-center gap-4'>
                   <hr className='flex-1 border-t border-border' />
                   <p className='shrink-0 text-xs text-muted-foreground'>OR</p>
                   <hr className='flex-1 border-t border-border' />
@@ -169,28 +162,18 @@ export function SignUpForm() {
                 <div className='flex flex-col gap-2'>
                   <Button
                     fullWidth
-                    color='secondary'
                     isLoading={isGooglePending}
                     spinner={<Spinner color='current' size='sm' />}
                     startContent={!isGooglePending && <GoogleIcon height={24} width={24} />}
+                    variant='secondary'
                     onPress={handleGoogleSignIn}
                   >
                     {isGooglePending ? 'Signing Up' : 'Continue with Google'}
                   </Button>
-                  <Button
-                    fullWidth
-                    color='secondary'
-                    isLoading={isGitHubPending}
-                    spinner={<Spinner color='current' size='sm' />}
-                    startContent={!isGitHubPending && <GitHubIcon height={24} width={24} />}
-                    onPress={handleGitHubSignIn}
-                  >
-                    {isGitHubPending ? 'Signing Up' : 'Continue with GitHub'}
-                  </Button>
                 </div>
                 <p className='mt-3 text-center text-sm'>
                   Already have an account?&nbsp;
-                  <Link className='text-link text-sm' href={routes.signIn}>
+                  <Link className='text-link text-sm' href={createAuthUrl(routes.signIn, callbackUrl) as Route}>
                     Sign In
                   </Link>
                 </p>

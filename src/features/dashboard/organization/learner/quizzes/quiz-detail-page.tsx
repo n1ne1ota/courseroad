@@ -5,13 +5,12 @@ import { Suspense } from 'react';
 
 import { shuffle } from '@/lib/utils/random';
 
-import { PageSkeleton } from '@/components/layout/page-skeleton';
-
 import { QuizPlayer } from '@/features/quiz/components/quiz-player';
+import { QuizPlayerSkeleton } from '@/features/quiz/components/quiz-player-skeleton';
 import { loadLearnerQuizPlayerFetcher } from '@/features/quiz/server/loaders/organization-learner-quizzes-quiz-detail';
 import { readForPage } from '@/server/auth/page-access';
 
-import type { QuizQuestion } from '@/features/quiz/quiz-player-types';
+import type { QuizQuestion } from '@/features/quiz/types/quiz-player-types';
 
 // ----------------------------------------------------
 // Learner Quiz Take View
@@ -62,10 +61,8 @@ async function LearnerQuizPlayerFetcher({ quizId }: { quizId: string }) {
 
 export function LearnerQuizTakeView({ quizId }: { quizId: string }): JSX.Element {
   return (
-    <div className='px-4 lg:px-6'>
-      <Suspense fallback={<PageSkeleton />}>
-        <LearnerQuizPlayerFetcher quizId={quizId} />
-      </Suspense>
-    </div>
+    <Suspense fallback={<QuizPlayerSkeleton />}>
+      <LearnerQuizPlayerFetcher quizId={quizId} />
+    </Suspense>
   );
 }

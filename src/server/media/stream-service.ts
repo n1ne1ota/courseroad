@@ -11,9 +11,30 @@ export type CreateVideoResponse = {
     title?: string;
 };
 
-export async function createVideo(title: string): Promise<CreateVideoResponse> {
+type StreamCollection = { guid: string; name: string };
+
+/** Find a Stream collection by exact name, creating it when missing. Collections are how Stream groups videos. */
+export async function getOrCreateCollection(name: string): Promise<string> {
+    const base = `${STREAM_API_BASE}/library/${env.BUNNY_STREAM_VIDEO_LIBRARY_ID}/collections`;
+    const headers = { AccessKey: env.BUNNY_STREAM_API_KEY, 'Content-Type': 'application/json' };
+
+    const search = await fetch(`${base}?page=1&itemsPerPage=100&search=${encodeURIComponent(name)}`, {
+        cache: 'no-store',
+        headers
+    });
+    if (!search.ok) throw new Error(`Bunny collection lookup failed: ${search.status}`);
+    const { items } = (await search.json()) as { items?: StreamCollection[] };
+    const existing = items?.find(collection => collection.name === name);
+    if (existing) return existing.guid;
+
+    const created = await fetch(base, { body: JSON.stringify({ name }), headers, method: 'POST' });
+    if (!created.ok) throw new Error(`Bunny collection create failed: ${created.status} ${await created.text()}`);
+    return ((await created.json()) as StreamCollection).guid;
+}
+
+export async function createVideo(title: string, collectionId?: string): Promise<CreateVideoResponse> {
     const res = await fetch(`${STREAM_API_BASE}/library/${env.BUNNY_STREAM_VIDEO_LIBRARY_ID}/videos`, {
-        body: JSON.stringify({ title }),
+        body: JSON.stringify({ title, ...(collectionId && { collectionId }) }),
         headers: {
             AccessKey: env.BUNNY_STREAM_API_KEY,
             'Content-Type': 'application/json'
@@ -27,8 +48,10 @@ export async function createVideo(title: string): Promise<CreateVideoResponse> {
     return (await res.json()) as CreateVideoResponse;
 }
 
-export async function getVideo(videoId: string) {
+export async function getVideo(videoId: string, signal?: AbortSignal) {
     const res = await fetch(`${STREAM_API_BASE}/library/${env.BUNNY_STREAM_VIDEO_LIBRARY_ID}/videos/${videoId}`, {
+        cache: 'no-store',
+        ...(signal && { signal }),
         headers: {
             AccessKey: env.BUNNY_STREAM_API_KEY
         }
@@ -59,6 +82,7 @@ export function getIframeUrl(videoId: string, params: Record<string, string> = {
 
 export function getHlsUrl(videoId: string, token?: string) {
     const host = env.NEXT_PUBLIC_BUNNY_CDN_HOSTNAME;
+    if (!host) throw new Error('Video playback is not configured');
     const url = new URL(`https://${host}/${videoId}/playlist.m3u8`);
     if (token) url.searchParams.set('token', token);
     return url.toString();

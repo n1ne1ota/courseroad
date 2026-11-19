@@ -2,7 +2,9 @@ import 'server-only';
 
 import { headers } from 'next/headers';
 
-import { completeOnboardingSchema } from '@/features/onboarding/schemas';
+import { isSelfServicePlatformRole, selfServicePlatformRoles } from '@/lib/auth/self-service-roles';
+
+import { completeOnboardingSchema } from '@/features/onboarding/schemas/schemas';
 import { createAuthAction } from '@/server/actions/create-auth-action';
 import { auth } from '@/server/auth/auth';
 import { prismaClient as prisma } from '@/server/db/client';
@@ -13,6 +15,9 @@ import { uploadBase64Image } from '@/server/media/image-upload-service';
 export const completeOnboarding = createAuthAction(
     completeOnboardingSchema,
     async ({ role, firstName, lastName, bio, websiteUrl, username, image, twitterUrl, githubUrl }, { user }) => {
+        if (role && !isSelfServicePlatformRole(user.role)) {
+            return { error: 'This account role must be managed by an administrator.' };
+        }
         try {
             let finalImageUrl = image;
             if (image && image.startsWith('data:image/')) {
@@ -48,29 +53,41 @@ export const completeOnboarding = createAuthAction(
                 }
             }
 
-            // Use Better Auth server-side API to update the session cookie and DB user fields
+            // The admin plugin forbids role input on updateUser. Only this validated,
+            // authenticated workflow may select a persona, with a database role guard
+            // so a stale session cannot downgrade an administrative account.
+            const profileData = {
+                ...(role ? { role } : {}),
+                ...(bio !== undefined ? { bio } : {}),
+                ...(websiteUrl !== undefined ? { websiteUrl: websiteUrl.trim() } : {}),
+                ...(twitterUrl !== undefined ? { twitterUrl: twitterUrl.trim() } : {}),
+                ...(githubUrl !== undefined ? { githubUrl: githubUrl.trim() } : {})
+            };
+            if (role) {
+                const updated = await prisma.user.updateMany({
+                    data: profileData,
+                    where: { id: user.id, role: { in: [...selfServicePlatformRoles] } }
+                });
+                if (updated.count !== 1) {
+                    return { error: 'This account role must be managed by an administrator.' };
+                }
+            } else {
+                await prisma.user.update({ data: profileData, where: { id: user.id } });
+            }
+
+            // Better Auth returns the updated database user when refreshing the
+            // cookie, including the persona saved above. Complete onboarding last.
             await auth.api.updateUser({
                 body: {
                     firstName: firstName?.trim() || undefined,
                     image: finalImageUrl || undefined,
                     lastName: lastName?.trim() || undefined,
                     onboardingComplete: true,
-                    role: role || undefined,
                     username: username?.trim() || undefined
                 },
                 headers: await headers()
             });
 
-            // Update remaining Prisma-only fields directly
-            await prisma.user.update({
-                data: {
-                    ...(bio !== undefined ? { bio } : {}),
-                    ...(websiteUrl !== undefined ? { websiteUrl: websiteUrl.trim() } : {}),
-                    ...(twitterUrl !== undefined ? { twitterUrl: twitterUrl.trim() } : {}),
-                    ...(githubUrl !== undefined ? { githubUrl: githubUrl.trim() } : {})
-                },
-                where: { id: user.id }
-            });
             return { success: true };
         } catch (error) {
             logs.db.error('Failed to complete onboarding', error);

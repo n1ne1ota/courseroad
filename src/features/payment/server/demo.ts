@@ -1,9 +1,10 @@
 import 'server-only';
 
 import { getAuthenticatedUser } from '@/server/auth/session';
-import { stripe } from '@/server/payments/payments';
+import { getStripe } from '@/server/payments/payments';
 export async function getMockClientSecret() {
     await getAuthenticatedUser();
+    const stripe = getStripe();
 
     const paymentIntent = await stripe.paymentIntents.create({
         amount: 5000, // $50.00

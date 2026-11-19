@@ -2,6 +2,11 @@ import type { Route } from 'next';
 
 export type OrgRole = 'owner' | 'manager' | 'creator' | 'instructor' | 'learner';
 
+/** Standalone recipient entry, available before organization membership exists. */
+export function invitationRoute(invitationId: string) {
+    return `/accept-invitation/${encodeURIComponent(invitationId)}` as Route;
+}
+
 /**
  * Generates type-safe org-scoped route paths for a given organization slug and role.
  *
@@ -24,6 +29,7 @@ export function createOrgRoutes(orgSlug: string, role?: string) {
 
         // Common/Shared routes but dynamic by role
         analytics: `${dashBase}/analytics` as Route,
+        announcements: `${dashBase}/announcements` as Route,
         courses: `${dashBase}/courses` as Route,
         dashboard: dashBase as Route,
         learners: `${dashBase}/learners` as Route,

@@ -9,15 +9,15 @@ import { ToggleGroup, ToggleGroupItem } from '@kurume-ui/core';
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@kurume-ui/core';
 import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 
-import { type AdminMetric, adminMetricsData } from '@/features/dashboard/shared/data/chart-data';
+import { type AdminMetric, adminMetricsData } from '@/features/dashboard/shared/mock/chart-data';
 
 const chartConfig = {
   signups: {
-    color: 'hsl(var(--chart-2))',
+    color: 'var(--kurume-chart-2)',
     label: 'Signups'
   },
   visitors: {
-    color: 'hsl(var(--chart-1))',
+    color: 'var(--kurume-chart-1)',
     label: 'Visitors'
   }
 } satisfies ChartConfig;
@@ -50,7 +50,19 @@ export function AdminDashboardChart() {
           </CardDescription>
         </div>
         <CardAction>
-          <ToggleGroup className='flex' type='single' value={timeRange} variant='outline' onValueChange={setTimeRange}>
+          <ToggleGroup
+            className='flex'
+            value={[timeRange]}
+            variant='outline'
+            onValueChange={(values, details) => {
+              const next = values[0];
+              if (next === undefined) {
+                details.cancel();
+                return;
+              }
+              setTimeRange(next);
+            }}
+          >
             <ToggleGroupItem className='h-9 px-4 sm:px-6' value='90d'>
               Last 3 months
             </ToggleGroupItem>

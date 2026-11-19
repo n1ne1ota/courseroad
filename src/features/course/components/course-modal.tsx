@@ -3,14 +3,7 @@
 import type { JSX } from 'react';
 import { startTransition, useActionState, useEffect, useState } from 'react';
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Plus } from 'lucide-react';
-import { useForm } from 'react-hook-form';
-
-import { createCourse } from '@/features/course/actions/course-actions';
-import { createCourseSchema } from '@/features/course/schemas';
-import { showErrorToast } from '@courseroad/iota-ui';
-import { Button } from '@courseroad/kurume-ui';
+import { Button, showErrorToast } from '@courseroad/kurume-ui';
 import {
   Dialog,
   DialogContent,
@@ -23,9 +16,19 @@ import {
 import { Field, FieldLabel } from '@courseroad/kurume-ui';
 import { Input } from '@courseroad/kurume-ui';
 
-export function CreatorCourseModal(): JSX.Element {
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Plus } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+
+import { createCourse, createPlatformCourse } from '@/features/course/actions/course-actions';
+import { createCourseSchema } from '@/features/course/schemas/course-schemas';
+
+export function CreatorCourseModal({
+  scope = 'organization',
+  triggerLabel = 'Create course'
+}: { scope?: 'organization' | 'platform'; triggerLabel?: string } = {}): JSX.Element {
   const [open, setOpen] = useState(false);
-  const [state, dispatch, isPending] = useActionState(createCourse, {
+  const [state, dispatch, isPending] = useActionState(scope === 'platform' ? createPlatformCourse : createCourse, {
     success: false
   });
 
@@ -33,6 +36,7 @@ export function CreatorCourseModal(): JSX.Element {
     defaultValues: {
       title: ''
     },
+    mode: 'onChange',
     resolver: zodResolver(createCourseSchema.pick({ title: true }))
   });
 
@@ -61,11 +65,9 @@ export function CreatorCourseModal(): JSX.Element {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Plus className='mr-2 h-4 w-4' />
-          Create Course
-        </Button>
+      <DialogTrigger render={<Button />}>
+        <Plus className='size-4' />
+        {triggerLabel}
       </DialogTrigger>
       <DialogContent className='sm:max-w-[425px]'>
         <DialogHeader>
@@ -77,7 +79,7 @@ export function CreatorCourseModal(): JSX.Element {
             <FieldLabel htmlFor='title'>Title</FieldLabel>
             <Input id='title' {...form.register('title')} />
             {form.formState.errors.title && (
-              <p className='text-sm text-red-500'>{form.formState.errors.title.message}</p>
+              <p className='text-sm text-destructive'>{form.formState.errors.title.message}</p>
             )}
           </Field>
           <DialogFooter>
@@ -86,8 +88,8 @@ export function CreatorCourseModal(): JSX.Element {
                 'Creating'
               ) : (
                 <>
-                  <Plus className='mr-2 h-4 w-4' />
-                  Create Course
+                  <Plus className='size-4' />
+                  Create course
                 </>
               )}
             </Button>

@@ -1,7 +1,8 @@
 'use client';
 
-import { courseLevelEnum } from '@/features/course/schemas';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@courseroad/kurume-ui';
+
+import { courseLevelEnum } from '@/features/course/schemas/course-schemas';
 
 interface LevelInputProps {
   className?: string; // Standard prop, though SelectTrigger usually takes the class
@@ -12,7 +13,12 @@ interface LevelInputProps {
 
 export function LevelInput({ id, onChange, value }: LevelInputProps) {
   return (
-    <Select {...(onChange ? { onValueChange: onChange } : {})} value={value || ''}>
+    <Select
+      value={value || null}
+      onValueChange={next => {
+        if (next !== null) onChange?.(next);
+      }}
+    >
       <SelectTrigger className='w-full' id={id}>
         <SelectValue placeholder='Select' />
       </SelectTrigger>

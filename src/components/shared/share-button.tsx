@@ -1,7 +1,7 @@
 'use client';
 
-import { showSuccessToast } from '@courseroad/iota-ui';
-import { Button } from '@courseroad/kurume-ui';
+import { Button, type ButtonProps, showSuccessToast } from '@courseroad/kurume-ui';
+
 import { Share2 as ShareIcon } from 'lucide-react';
 
 import { useShare, type UseShareOptions } from '@/hooks/use-share';
@@ -10,12 +10,12 @@ export interface ShareButtonProps {
   className?: string;
   label?: string;
   shareData: UseShareOptions;
-  size?: 'default' | 'icon' | 'lg' | 'sm';
-  variant?: 'default' | 'destructive' | 'ghost' | 'link' | 'outline' | 'secondary';
+  size?: ButtonProps['size'];
+  variant?: ButtonProps['variant'];
 }
 
 /** Share app content through the browser share API or clipboard fallback. */
-export function ShareButton({ className, label, shareData, size = 'default', variant = 'outline' }: ShareButtonProps) {
+export function ShareButton({ className, label, shareData, size = 'md', variant = 'outline' }: ShareButtonProps) {
   const { share } = useShare();
 
   const handleShare = async () => {
@@ -28,7 +28,7 @@ export function ShareButton({ className, label, shareData, size = 'default', var
 
   return (
     <Button className={className} size={size} variant={variant} onClick={handleShare}>
-      <ShareIcon className='mr-2 h-4 w-4' />
+      <ShareIcon aria-hidden='true' data-icon={label ? 'inline-start' : undefined} />
       {label && <span>{label}</span>}
       {!label && <span className='sr-only'>Share</span>}
     </Button>

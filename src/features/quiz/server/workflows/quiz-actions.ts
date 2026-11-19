@@ -6,12 +6,12 @@ import { redirect } from 'next/navigation';
 
 import { z } from 'zod';
 
-import { createQuizSchema, updateQuizSchema } from '@/features/quiz/schemas';
+import { createQuizSchema, updateQuizSchema } from '@/features/quiz/schemas/schemas';
 import {
     createQuiz as createQuizMutation,
     deleteQuiz as deleteQuizMutation,
     updateQuiz as updateQuizMutation
-} from '@/features/quiz/server/repositories/mutations/index';
+} from '@/features/quiz/server/db/mutations/index';
 import { createTenantAction, createTenantFormAction } from '@/server/actions/create-tenant-action';
 import { getTenantPrisma } from '@/server/db/get-tenant-prisma';
 

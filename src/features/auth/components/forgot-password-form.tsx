@@ -4,14 +4,14 @@ import { useState, useTransition } from 'react';
 
 import Link from 'next/link';
 
-import { AltArrowLeft as ArrowLeftIcon } from '@solar-icons/react-perf/Linear';
+import { Button, Card, Input, Spinner } from '@courseroad/iota-ui';
+import { Alert, AlertDescription } from '@courseroad/kurume-ui';
+
+import { AltArrowLeftIcon as ArrowLeftIcon } from '@solar-icons/react/linear';
 import { AnimatePresence, motion } from 'motion/react';
 
 import { requestPasswordResetEmail } from '@/lib/auth/auth-client';
 import { routes } from '@/lib/routes';
-
-import { Button, Card, Input, Spinner } from '@courseroad/iota-ui';
-import { Alert, AlertDescription } from '@courseroad/kurume-ui';
 
 export function ForgotPasswordForm() {
   const [isPending, startTransition] = useTransition();
@@ -54,7 +54,7 @@ export function ForgotPasswordForm() {
               <p className='text-sm text-muted-foreground'>
                 If an account exists, a reset link has been sent to the email address provided.
               </p>
-              <Button className='mt-2 w-full' color='primary' render={<Link href={routes.signIn} />} variant='flat'>
+              <Button className='mt-2 w-full' render={<Link href={routes.signIn} />} variant='secondary'>
                 Return to Sign In
               </Button>
             </motion.div>
@@ -85,7 +85,7 @@ export function ForgotPasswordForm() {
                 <Button
                   className='w-full'
                   type='submit'
-                  color='primary'
+                  color='brand'
                   isLoading={isPending}
                   spinner={<Spinner color='current' size='sm' />}
                 >

@@ -1,7 +1,8 @@
 'use client';
 
-import { Separator, ThemeSwitch } from '@courseroad/iota-ui';
+import { Separator, ThemeSwitcher } from '@courseroad/iota-ui';
 import { StatusDot } from '@courseroad/kurume-ui';
+
 import { useTheme } from 'next-themes';
 
 import { CourseroadIcon } from '@/assets/icons/courseroad-icon';
@@ -11,8 +12,8 @@ export function Footer() {
 
   return (
     <footer className='relative z-20 flex w-full flex-col'>
-      <div className='mx-auto w-full max-w-7xl px-6 py-12 lg:px-8'>
-        <div className='flex flex-col items-center justify-center gap-4 md:flex-row md:justify-between'>
+      <div className='mx-auto w-full max-w-7xl px-6 py-6 sm:py-8 lg:px-8'>
+        <div className='flex flex-col items-center justify-between gap-4 md:flex-row'>
           <div className='flex flex-col items-center gap-2 md:items-start'>
             <div className='flex items-center justify-center gap-3'>
               <div className='flex items-center'>
@@ -30,7 +31,7 @@ export function Footer() {
             </p>
           </div>
           <div className='flex items-center justify-center'>
-            <ThemeSwitch className='w-52' theme={theme} onThemeChange={setTheme} />
+            <ThemeSwitcher className='w-52' theme={theme} onThemeChange={setTheme} />
           </div>
         </div>
       </div>

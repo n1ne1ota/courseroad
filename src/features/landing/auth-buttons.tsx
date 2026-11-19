@@ -5,10 +5,10 @@ import { useSyncExternalStore } from 'react';
 import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
 
+import { Button } from '@courseroad/iota-ui';
+
 import { useSession } from '@/lib/auth/auth-client';
 import { getAuthPath } from '@/lib/utils/auth-navigation';
-
-import { Button } from '@courseroad/iota-ui';
 
 /**
  * Auth buttons for the landing page
@@ -28,10 +28,10 @@ export function AuthButtons() {
   if (!mounted || isPending) {
     return (
       <div className='mt-4 flex items-center gap-3'>
-        <Button disabled radius='sm' variant='flat'>
+        <Button disabled radius='sm' variant='secondary'>
           Sign In
         </Button>
-        <Button disabled color='primary' radius='sm'>
+        <Button disabled color='brand' radius='sm'>
           Sign Up
         </Button>
       </div>
@@ -47,9 +47,8 @@ export function AuthButtons() {
   return (
     <div className='mt-4 flex items-center gap-3'>
       <Button
-        color='secondary'
         radius='sm'
-        variant='solid'
+        variant='secondary'
         onPress={() => {
           router.push(getAuthPath('signIn') as Route);
         }}
@@ -57,9 +56,9 @@ export function AuthButtons() {
         Sign In
       </Button>
       <Button
-        color='primary'
+        color='brand'
         radius='sm'
-        variant='solid'
+        variant='primary'
         onPress={() => {
           router.push(getAuthPath('signUp') as Route);
         }}

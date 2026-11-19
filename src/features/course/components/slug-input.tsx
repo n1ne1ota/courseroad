@@ -38,7 +38,7 @@ export function SlugInput({ baseTitle, id, onChange, value }: SlugInputProps) {
         value={value}
         onChange={onChange}
       />
-      <Button type='button' variant='secondary' onClick={handleGenerate}>
+      <Button type='button' variant='outline' onClick={handleGenerate}>
         Generate
       </Button>
     </div>

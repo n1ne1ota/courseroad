@@ -1,4 +1,4 @@
-import type { DashboardTableRow } from '@/features/dashboard/shared/schemas';
+import type { DashboardTableRow } from '@/features/dashboard/shared/schemas/schemas';
 import type { ExportCsvPayload } from '@/types/analytics.types';
 
 function escapeCsvCell(value: DashboardTableRow[keyof DashboardTableRow]): string {

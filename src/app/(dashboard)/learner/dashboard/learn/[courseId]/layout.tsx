@@ -1,21 +1,32 @@
 import type { ReactNode } from 'react';
+import { Suspense } from 'react';
 
 import type { Route } from 'next';
 import Link from 'next/link';
 
 import { BookOpen, CheckCircle2, ChevronLeft, LayoutDashboard, PlayCircle } from 'lucide-react';
 
+import { LearnShellSkeleton } from '@/features/course/components/learn-skeletons';
 import { loadB2CLearnLayout } from '@/features/course/server/loaders/platform-learner-learn-course-layout';
 import { readForPage } from '@/server/auth/page-access';
 
-import type { Lesson, Module } from '@/features/course/types';
+import type { Lesson, Module } from '@/features/course/types/course-types';
 
 type LearnLayoutProps = {
   children: ReactNode;
   params: Promise<{ courseId: string }>;
 };
 
-export default async function B2CLearnLayout(props: LearnLayoutProps) {
+/** The course outline needs the course, so the whole full-screen shell suspends behind a matching skeleton. */
+export default function B2CLearnLayout(props: LearnLayoutProps) {
+  return (
+    <Suspense fallback={<LearnShellSkeleton />}>
+      <B2CLearnShell {...props} />
+    </Suspense>
+  );
+}
+
+async function B2CLearnShell(props: LearnLayoutProps) {
   const { course, completedLessonIds } = await readForPage(() => loadB2CLearnLayout(props));
 
   return (

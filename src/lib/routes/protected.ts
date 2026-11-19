@@ -19,6 +19,7 @@ export const protectedRoutes = {
 
     // B2C Learner Dashboard
     dashboard: '/learner/dashboard',
+    dashboardAnnouncements: '/learner/dashboard/announcements',
     dashboardBilling: '/learner/dashboard/billing',
     dashboardCertificates: '/learner/dashboard/certificates',
 

@@ -74,7 +74,7 @@ export function CodeOptionDisplay({ code, language }: CodeOptionDisplayProps): J
 
   return (
     <div
-      className='overflow-x-auto rounded-md bg-[var(--tt-codeblock-bg,hsl(var(--muted)))] px-3 py-2 font-mono text-sm [&_.shiki]:!bg-transparent [&_pre]:!m-0 [&_pre]:!p-0'
+      className='overflow-x-auto rounded-md bg-[var(--tt-codeblock-bg,var(--kurume-surface-4))] px-3 py-2 font-mono text-sm [&_.shiki]:!bg-transparent [&_pre]:!m-0 [&_pre]:!p-0'
       dangerouslySetInnerHTML={{ __html: html || escapeHtml(code) }}
     />
   );

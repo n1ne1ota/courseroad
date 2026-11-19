@@ -1,300 +1,221 @@
 'use client';
 
 import type { JSX } from 'react';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
-import { showErrorToast, showSuccessToast } from '@courseroad/iota-ui';
-import { Badge } from '@courseroad/kurume-ui';
-import { Button } from '@courseroad/kurume-ui';
-import { ConfirmationDialog } from '@courseroad/kurume-ui';
-import { Input } from '@courseroad/kurume-ui';
-import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import {
+  Badge,
+  Button,
+  ConfirmationDialog,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  Input
+} from '@courseroad/kurume-ui';
+
+import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Pencil, Plus, Trash } from 'lucide-react';
+import { ArrowDown, ArrowUp, GripVertical, Pencil, Plus, Trash } from 'lucide-react';
 
-import { useInView } from '@/hooks/use-in-view';
-import { cn } from '@/lib/utils/cn';
+import type { CurriculumRun } from '@/features/course/components/course-module-list';
+import type { CurriculumModule } from '@/features/course/types/curriculum-types';
 
-import { createLesson, deleteLesson } from '@/features/course/actions/lesson-actions';
-import { deleteModule, updateModule } from '@/features/course/actions/module-actions';
-
-import type { Lesson, Module } from '@/features/course/types';
-
+import { ActionsMenuTrigger } from './course-actions-menu-trigger';
 import { SortableLesson } from './course-sortable-lesson';
-
-type ModuleWithLessons = Module & {
-  lessons: Lesson[];
-};
 
 interface SortableModuleProps {
   activeLessonId: string | null;
-  allModules: ModuleWithLessons[];
+  allModules: CurriculumModule[];
   index: number;
-  module: ModuleWithLessons;
-  onModulesChange: (modules: ModuleWithLessons[]) => void;
-  onSelectLesson: (id: string | null) => void;
+  module: CurriculumModule;
+  courseId: string;
+  disabled: boolean;
+  readOnly: boolean;
+  run: CurriculumRun;
+  onSelectLesson: (id: string | null) => Promise<void>;
 }
-
 export function CourseSortableModule({
   activeLessonId,
   allModules,
   index,
   module,
-  onModulesChange,
+  courseId,
+  disabled,
+  readOnly,
+  run,
   onSelectLesson
 }: SortableModuleProps): JSX.Element {
   const { attributes, isDragging, listeners, setNodeRef, transform, transition } = useSortable({
-    data: { module, type: 'Module' },
-    id: module.id
+    data: { type: 'Module' },
+    id: module.id,
+    disabled
   });
-
-  const { inView, ref } = useInView<HTMLDivElement>({ once: true, threshold: 0.1 });
-  const setRefs = useCallback(
-    (node: HTMLDivElement | null) => {
-      setNodeRef(node);
-      ref(node);
-    },
-    [ref, setNodeRef]
-  );
-
-  const style = {
-    transform: CSS.Translate.toString(transform),
-    transition,
-    transitionDelay: isDragging ? '0ms' : `${index * 50}ms`
-  };
-
-  const [isEditing, setIsEditing] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(module.title);
-
-  // Dialog states
-  const [showDeleteModuleDialog, setShowDeleteModuleDialog] = useState(false);
-  const [lessonToDelete, setLessonToDelete] = useState<string | null>(null);
-
-  const handleUpdateModule = async () => {
-    if (!title.trim() || title === module.title) {
-      setIsEditing(false);
-      return;
-    }
-
-    const previousTitle = module.title;
-
-    // Optimistic update
-    const newModules = allModules.map(m => (m.id === module.id ? { ...m, title } : m));
-    onModulesChange(newModules);
-    setIsEditing(false);
-
-    let success = false;
-    try {
-      const result = await updateModule({ moduleId: module.id, title });
-      if (result.success) {
-        success = true;
-        showSuccessToast('Module updated');
-      } else {
-        showErrorToast(result.error || 'Failed to update module');
-      }
-    } catch {
-      showErrorToast('Failed to update module');
-    }
-
-    if (!success) {
-      // Revert optimism
-      const revertedModules = allModules.map(m => (m.id === module.id ? { ...m, title: previousTitle } : m));
-      onModulesChange(revertedModules);
-      setTitle(previousTitle);
-    }
+  const [deleteModule, setDeleteModule] = useState(false);
+  const [deleteLesson, setDeleteLesson] = useState<string | null>(null);
+  const startRename = () => {
+    if (readOnly || disabled) return;
+    setTitle(module.title);
+    setEditing(true);
   };
-
-  const handleDeleteModule = async () => {
-    try {
-      const result = await deleteModule({ moduleId: module.id });
-      if (!result.success) {
-        showErrorToast(result.error || 'Failed to delete module');
-        return;
-      }
-      const newModules = allModules.filter(m => m.id !== module.id);
-      onModulesChange(newModules);
-      showSuccessToast('Module deleted');
-    } catch {
-      showErrorToast('Failed to delete module');
-    }
+  const rename = async () => {
+    if (!editing || disabled) return;
+    setEditing(false);
+    if (title.trim() && title !== module.title)
+      await run({ courseId, operation: 'updateModule', moduleId: module.id, title });
   };
-
-  const handleDeleteLesson = async (id: string) => {
-    try {
-      const result = await deleteLesson({ lessonId: id });
-      if (!result.success) {
-        showErrorToast(result.error || 'Failed to delete lesson');
-        return;
-      }
-      const newModules = allModules.map(m => {
-        if (m.id === module.id) {
-          return { ...m, lessons: m.lessons.filter(l => l.id !== id) };
-        }
-        return m;
-      });
-      onModulesChange(newModules);
-      showSuccessToast('Lesson deleted');
-      if (activeLessonId === id) onSelectLesson(null);
-    } catch {
-      showErrorToast('Failed to delete lesson');
-    }
-  };
-
-  const [isCreatingLesson, setIsCreatingLesson] = useState(false);
-  const handleCreateLesson = async () => {
-    try {
-      setIsCreatingLesson(true);
-      const result = await createLesson({ moduleId: module.id, title: 'New Lesson' });
-      if (!result.success || !result.data) {
-        showErrorToast(result.error || 'Failed to create lesson');
-        return;
-      }
-      const newLesson = result.data;
-
-      const newModules = allModules.map(m => {
-        if (m.id === module.id) {
-          return { ...m, lessons: [...m.lessons, newLesson] };
-        }
-        return m;
-      });
-
-      onModulesChange(newModules);
-      showSuccessToast('Lesson created');
-    } catch {
-      showErrorToast('Failed to create lesson');
-    } finally {
-      setIsCreatingLesson(false);
-    }
-  };
-
-  if (isDragging) {
-    return (
-      <div
-        ref={setRefs}
-        className='h-[100px] rounded-lg border-2 border-primary/20 bg-muted/50 opacity-50'
-        style={style}
-      />
-    );
-  }
-
+  const moveModule = (delta: number) =>
+    void run({
+      courseId,
+      operation: 'reorderModules',
+      ids: arrayMove(allModules, index, index + delta).map(row => row.id)
+    });
+  const addLesson = () => void run({ courseId, operation: 'createLesson', moduleId: module.id, title: 'New Lesson' });
   return (
     <>
       <div
-        ref={setRefs}
-        className={cn(
-          'group rounded-xl border bg-card text-card-foreground shadow-sm transition-all duration-700 ease-out',
-          'data-[in-view=false]:translate-y-4 data-[in-view=false]:opacity-0 data-[in-view=true]:translate-y-0 data-[in-view=true]:opacity-100',
-          activeLessonId && module.lessons.some(l => l.id === activeLessonId) && 'border-primary/50'
-        )}
-        style={style}
-        data-in-view={inView}
+        ref={setNodeRef}
+        className='rounded-xl border bg-card text-card-foreground shadow-sm'
+        style={{ transform: CSS.Translate.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }}
+        data-module-id={module.id}
+        data-testid='curriculum-module'
       >
-        <div className='flex items-center gap-2 rounded-t-xl border-b bg-muted/30 p-3'>
-          <button {...attributes} {...listeners} className='cursor-grab rounded p-1 transition-colors hover:bg-muted'>
-            <GripVertical className='h-4 w-4 text-muted-foreground' />
-          </button>
-
+        <div className='flex items-center gap-2 rounded-t-xl border-b bg-muted/30 px-3 py-2.5'>
+          {!readOnly && (
+            <button
+              type='button'
+              {...attributes}
+              {...listeners}
+              className='cursor-grab rounded p-1 text-muted-foreground hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none'
+              disabled={disabled}
+              aria-label={`Drag module ${module.title}`}
+            >
+              <GripVertical className='h-4 w-4' />
+            </button>
+          )}
           <div className='min-w-0 flex-1'>
-            {isEditing ? (
+            {editing ? (
               <Input
-                className='h-8'
+                style={{ height: '2rem' }}
                 autoFocus
+                disabled={disabled}
                 value={title}
-                onBlur={handleUpdateModule}
-                onChange={e => setTitle(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleUpdateModule()}
+                aria-label='Module title'
+                onBlur={() => void rename()}
+                onChange={event => setTitle(event.target.value)}
+                onKeyDown={event => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault();
+                    void rename();
+                  }
+                  if (event.key === 'Escape') setEditing(false);
+                }}
               />
             ) : (
               <div className='flex items-center gap-2'>
-                <span className='truncate font-medium'>{module.title}</span>
-                <Badge className='text-xs' variant='outline'>
-                  {module.lessons.length} Lessons
+                <span className='truncate font-medium' onDoubleClick={startRename}>
+                  {module.title}
+                </span>
+                <Badge color={module.lessons.length ? 'brand' : 'warning'} size='sm'>
+                  {module.lessons.length} {module.lessons.length === 1 ? 'Lesson' : 'Lessons'}
                 </Badge>
               </div>
             )}
           </div>
-
-          <div className='flex items-center gap-1'>
-            <Button
-              className='h-8 w-8 hover:bg-primary/10 hover:text-primary'
-              size='icon'
-              variant='ghost'
-              onClick={() => setIsEditing(true)}
-            >
-              <Pencil className='h-4 w-4' />
-            </Button>
-            <Button
-              className='h-8 w-8 hover:bg-destructive/10 hover:text-destructive'
-              size='icon'
-              variant='ghost'
-              onClick={() => setShowDeleteModuleDialog(true)}
-            >
-              <Trash className='h-4 w-4' />
-            </Button>
-            <Button
-              className='ml-2 h-8'
-              isLoading={isCreatingLesson}
-              size='sm'
-              variant='secondary'
-              onClick={handleCreateLesson}
-            >
-              {isCreatingLesson ? (
-                'Adding'
-              ) : (
-                <>
-                  <Plus className='h-4 w-4' />
-                  <span className='hidden sm:inline'>Add Lesson</span>
-                </>
-              )}
-            </Button>
-          </div>
+          {!readOnly && (
+            <DropdownMenu>
+              <ActionsMenuTrigger disabled={disabled} label={`Actions for module ${module.title}`} />
+              <DropdownMenuContent className='min-w-44' align='end'>
+                <DropdownMenuItem onClick={startRename}>
+                  <Pencil className='h-4 w-4' />
+                  Rename
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled={index === 0} onClick={() => moveModule(-1)}>
+                  <ArrowUp className='h-4 w-4' />
+                  Move up
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled={index === allModules.length - 1} onClick={() => moveModule(1)}>
+                  <ArrowDown className='h-4 w-4' />
+                  Move down
+                </DropdownMenuItem>
+                <DropdownMenuItem variant='destructive' onClick={() => setDeleteModule(true)}>
+                  <Trash className='h-4 w-4' />
+                  Delete module
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
-
-        <div className='min-h-[10px] space-y-2 p-2'>
-          <SortableContext items={module.lessons} strategy={verticalListSortingStrategy}>
-            {module.lessons.length === 0 && (
-              <div className='rounded-lg border border-dashed py-4 text-center text-sm text-muted-foreground'>
-                No lessons in this module
-              </div>
-            )}
-            {module.lessons.map(lesson => (
+        <div className='min-h-12 space-y-2 p-2'>
+          <SortableContext
+            id={`lessons-${module.id}`}
+            items={module.lessons.map(lesson => lesson.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            {module.lessons.map((lesson, lessonIndex) => (
               <SortableLesson
                 key={lesson.id}
+                canMoveDown={lessonIndex < module.lessons.length - 1}
+                canMoveUp={lessonIndex > 0}
+                disabled={disabled}
                 isActive={activeLessonId === lesson.id}
                 lesson={lesson}
-                onClick={() => onSelectLesson(lesson.id)}
-                onDelete={id => setLessonToDelete(id)}
+                readOnly={readOnly}
+                onClick={() => void onSelectLesson(lesson.id)}
+                onDelete={setDeleteLesson}
+                onReorder={delta =>
+                  void run({
+                    courseId,
+                    operation: 'reorderLessons',
+                    moduleId: module.id,
+                    ids: arrayMove(module.lessons, lessonIndex, lessonIndex + delta).map(row => row.id)
+                  })
+                }
               />
             ))}
           </SortableContext>
+          {!readOnly ? (
+            <Button
+              className='w-full rounded-lg'
+              type='button'
+              disabled={disabled}
+              variant='dashed'
+              aria-label={`Add lesson to ${module.title}`}
+              onClick={addLesson}
+            >
+              <Plus />
+              {module.lessons.length ? 'Add lesson' : 'Add the first lesson'}
+            </Button>
+          ) : (
+            !module.lessons.length && (
+              <p className='rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground'>
+                No lessons in this module
+              </p>
+            )
+          )}
         </div>
       </div>
-
-      {/* Delete Module Confirmation */}
       <ConfirmationDialog
         confirmText='Delete'
-        description='This will permanently delete this module and all its lessons. This action cannot be undone.'
-        open={showDeleteModuleDialog}
+        description='This will permanently delete this module and all its lessons.'
+        open={deleteModule}
         title='Delete Module?'
         variant='destructive'
-        onConfirm={handleDeleteModule}
-        onOpenChange={setShowDeleteModuleDialog}
+        onConfirm={() => run({ courseId, operation: 'deleteModule', moduleId: module.id }).then(() => undefined)}
+        onOpenChange={setDeleteModule}
       />
-
-      {/* Delete Lesson Confirmation */}
       <ConfirmationDialog
         confirmText='Delete'
-        description='This will permanently delete this lesson. This action cannot be undone.'
-        open={lessonToDelete !== null}
+        description='This will permanently delete this lesson.'
+        open={deleteLesson !== null}
         title='Delete Lesson?'
         variant='destructive'
         onConfirm={async () => {
-          if (lessonToDelete) {
-            await handleDeleteLesson(lessonToDelete);
-          }
+          if (deleteLesson) await run({ courseId, operation: 'deleteLesson', lessonId: deleteLesson });
         }}
         onOpenChange={open => {
-          if (!open) setLessonToDelete(null);
+          if (!open) setDeleteLesson(null);
         }}
       />
     </>

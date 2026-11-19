@@ -16,8 +16,8 @@ export function ForgotPasswordSkeleton() {
         </div>
 
         <div className='mt-2 flex flex-col gap-4'>
-          <Skeleton className='rounded-medium h-14 w-full' />
-          <Skeleton className='rounded-medium h-10 w-full' />
+          <Skeleton className='h-14 w-full' />
+          <Skeleton className='h-10 w-full' />
         </div>
 
         <Skeleton className='mx-auto mt-2 h-4 w-24 rounded-md' />

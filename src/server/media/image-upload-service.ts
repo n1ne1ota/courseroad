@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { buildStoragePath, IMAGE_UPLOAD_SCOPES, type ImageUploadScope } from '@/lib/constants/image-upload';
+import { buildScopedStoragePath, type MediaContext, type StorageOwner } from '@/lib/media/storage-layout';
 
 import { env } from '@/server/config/env';
 import { logs } from '@/server/logging/server';
@@ -16,7 +17,11 @@ export const MAX_IMAGE_UPLOAD_BYTES = 10 * 1024 * 1024;
 
 type UploadScopedImageArgs = {
     file: File;
-    organizationId: string;
+    organizationId: string | null;
+    /** Who the file belongs to; decides the storage root. */
+    owner: StorageOwner;
+    /** Verified course, lesson, or quiz the image belongs to; decides the folder under the owner root. */
+    context?: MediaContext;
     requestId: string;
     scope: unknown;
     userId: string;
@@ -82,8 +87,10 @@ function sanitizeFileName(fileName: string, mimeType: keyof typeof IMAGE_UPLOAD_
 }
 
 export async function uploadScopedImage({
+    context = {},
     file,
     organizationId,
+    owner,
     requestId,
     scope,
     userId
@@ -97,9 +104,9 @@ export async function uploadScopedImage({
     }
 
     const sanitizedFileName = sanitizeFileName(file.name, file.type as keyof typeof IMAGE_UPLOAD_MIME_TYPES);
-    const path = buildStoragePath(organizationId, scope, sanitizedFileName);
+    const path = buildScopedStoragePath(owner, scope, sanitizedFileName, context);
 
-    logs.upload.info('Scoped image upload validated', {
+    logs.upload.debug('Scoped image upload validated', {
         fileName: file.name,
         generatedPath: path,
         organizationId,
@@ -115,7 +122,7 @@ export async function uploadScopedImage({
     const buffer = Buffer.from(await file.arrayBuffer());
     const target = STORAGE_UPLOAD_URL(path);
 
-    logs.upload.info('Scoped image upload to storage starting', {
+    logs.upload.debug('Scoped image upload to storage starting', {
         generatedPath: path,
         organizationId,
         requestId,
@@ -199,7 +206,7 @@ export async function uploadBase64Image({
     const path = buildStoragePath(prefixId, scope, filename);
     const target = STORAGE_UPLOAD_URL(path);
 
-    logs.upload.info('Base64 image upload to storage starting', {
+    logs.upload.debug('Base64 image upload to storage starting', {
         generatedPath: path,
         prefixId,
         scope,

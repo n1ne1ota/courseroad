@@ -2,11 +2,11 @@ import 'server-only';
 
 import type { Route } from 'next';
 
-import { type CompletedCourse } from '@/features/course/certificate-types';
 import {
     getLearnerEnrollmentsWithProgressDetails,
     getUserLessonProgress
-} from '@/features/course/server/repositories/queries/get-enrollments';
+} from '@/features/course/server/db/queries/get-enrollments';
+import { type CompletedCourse } from '@/features/course/types/certificate-types';
 import { destination } from '@/server/auth/read-errors';
 import { getAuthenticatedUser } from '@/server/auth/session';
 import { prismaClient } from '@/server/db/client';

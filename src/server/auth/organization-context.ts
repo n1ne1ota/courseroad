@@ -6,16 +6,12 @@ import { headers } from 'next/headers';
 
 import { z } from 'zod';
 
+import { meetsOrganizationRole, type OrgRoleLevel } from '@/lib/auth/org-role-levels';
+
 import { AccessError, getAuthenticatedUser } from '@/server/auth/session';
 import { prismaClient } from '@/server/db/client';
 
-export const organizationRoles = ['owner', 'manager', 'creator', 'instructor', 'learner'] as const;
-export type OrgRoleLevel = (typeof organizationRoles)[number];
-
-export function meetsOrganizationRole(actual: string, required: OrgRoleLevel) {
-    const index = organizationRoles.indexOf(actual.toLowerCase() as OrgRoleLevel);
-    return index >= 0 && index <= organizationRoles.indexOf(required);
-}
+export { meetsOrganizationRole, organizationRoles, type OrgRoleLevel } from '@/lib/auth/org-role-levels';
 
 const resolveOrganization = cache(async (slug: string) => {
     const user = await getAuthenticatedUser();

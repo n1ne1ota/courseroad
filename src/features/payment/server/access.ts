@@ -12,9 +12,10 @@ export async function requireCoursePurchase(input: string) {
     const user = await getAuthenticatedUser();
     const course = await prismaClient.course.findUnique({
         where: { id: courseId },
-        select: { id: true, userId: true, organizationId: true, status: true, price: true }
+        select: { id: true, userId: true, organizationId: true, status: true, visibility: true, price: true }
     });
-    if (!course || course.status !== 'Published') throw new AccessError('Course not found', 404);
+    if (!course || course.status !== 'Published' || course.visibility === 'Private')
+        throw new AccessError('Course not found', 404);
     if (course.organizationId) {
         const organization = await prismaClient.organization.findUnique({
             where: { id: course.organizationId },

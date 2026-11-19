@@ -1,9 +1,25 @@
-import { createConsola } from 'consola';
+import { createConsola, LogLevels } from 'consola';
 
 import { getLogContext, logContextStorage, runWithLogContext, runWithMergedLogContext } from './context';
 import { devReporter, jsonReporter } from './reporter';
 
 export { getLogContext, logContextStorage, runWithLogContext, runWithMergedLogContext };
+
+const LOG_LEVEL_NAMES = ['trace', 'debug', 'info', 'warn', 'error', 'fatal'] as const;
+type LogLevelName = (typeof LOG_LEVEL_NAMES)[number];
+
+/**
+ * Resolve the minimum log level from `LOG_LEVEL` (trace | debug | info | warn | error | fatal).
+ * Unset or invalid values fall back to `debug` in development and `info` everywhere else.
+ * Read from `process.env` directly so logging never depends on validated app env.
+ */
+export function resolveLogLevel(): number {
+    const raw = process.env.LOG_LEVEL?.trim().toLowerCase();
+    if (raw && (LOG_LEVEL_NAMES as readonly string[]).includes(raw)) {
+        return LogLevels[raw as LogLevelName];
+    }
+    return process.env.NODE_ENV === 'development' ? LogLevels.debug : LogLevels.info;
+}
 
 const baseConsola = createConsola({
     reporters: [
@@ -18,7 +34,7 @@ const baseConsola = createConsola({
         }
     ]
 });
-baseConsola.level = process.env.NODE_ENV === 'development' ? 4 : 3;
+baseConsola.level = resolveLogLevel();
 
 export const log = {
     trace: (msg: string, ...args: unknown[]) => baseConsola.trace(msg, ...args),

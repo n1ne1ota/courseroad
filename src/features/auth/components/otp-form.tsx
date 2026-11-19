@@ -2,18 +2,23 @@
 
 import { useEffect, useState, useTransition } from 'react';
 
+import type { Route } from 'next';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { Button, Card, InputOTP, Spinner } from '@courseroad/iota-ui';
 import { Alert, AlertDescription } from '@courseroad/kurume-ui';
+
 import { motion } from 'motion/react';
 
 import { otpPending, sendOtpVerificationEmail, verifyEmailWithOtp } from '@/lib/auth/auth-client';
+import { createAuthUrl, getCallbackUrl } from '@/lib/auth/callback-url';
 import { routes } from '@/lib/routes';
 
 export function OtpForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = getCallbackUrl(searchParams, '/api/auth/redirect');
 
   const [email, setEmail] = useState<string | null>(null);
   const [otp, setOtp] = useState('');
@@ -25,9 +30,9 @@ export function OtpForm() {
 
   useEffect(() => {
     const pendingEmail = otpPending.getEmail();
-    if (!pendingEmail) router.push(routes.signUp);
+    if (!pendingEmail) router.push(createAuthUrl(routes.signUp, callbackUrl) as Route);
     else queueMicrotask(() => setEmail(pendingEmail));
-  }, [router]);
+  }, [callbackUrl, router]);
 
   useEffect(() => {
     if (cooldown > 0) {
@@ -43,7 +48,7 @@ export function OtpForm() {
     setError(null);
     startTransition(async () => {
       const result = await verifyEmailWithOtp(email, otp);
-      if (result.success) router.replace('/api/auth/redirect');
+      if (result.success) router.replace(callbackUrl as Route);
       else setError(result.error?.message || 'Invalid code');
     });
   };
@@ -81,14 +86,14 @@ export function OtpForm() {
           )}
 
           <div className='flex justify-center py-2'>
-            <InputOTP autoFocus color='primary' disabled={isPending} maxLength={6} value={otp} onChange={setOtp} />
+            <InputOTP autoFocus color='brand' disabled={isPending} maxLength={6} value={otp} onChange={setOtp} />
           </div>
 
           <div className='flex flex-col gap-2'>
             <Button
               className='w-full'
               type='button'
-              color='primary'
+              color='brand'
               disabled={otp.length !== 6 || isPending}
               isLoading={isPending}
               spinner={<Spinner color='current' size='sm' />}
@@ -100,10 +105,10 @@ export function OtpForm() {
             <Button
               className='w-full'
               type='button'
-              color='secondary'
               disabled={cooldown > 0 || isResending}
               isLoading={isResending}
               spinner={<Spinner color='current' size='sm' />}
+              variant='secondary'
               onClick={handleResend}
             >
               {cooldown > 0 ? `Resend Code (${cooldown}s)` : 'Resend Code'}
@@ -112,7 +117,7 @@ export function OtpForm() {
 
           <p className='mt-3 text-center text-sm'>
             Need a different email?&nbsp;
-            <Link className='text-link text-sm' href={routes.signUp}>
+            <Link className='text-link text-sm' href={createAuthUrl(routes.signUp, callbackUrl) as Route}>
               Back to Sign Up
             </Link>
           </p>

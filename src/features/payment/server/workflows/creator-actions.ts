@@ -5,10 +5,11 @@ import { z } from 'zod';
 import { createAuthAction } from '@/server/actions/create-auth-action';
 import { getPlatformUser } from '@/server/auth/session';
 import { prismaClient } from '@/server/db/client';
-import { stripe } from '@/server/payments/payments';
+import { getStripe } from '@/server/payments/payments';
 export const startCreatorStripeOnboarding = createAuthAction(z.object({}), async (_, { user }) => {
     await getPlatformUser('creator');
     try {
+        const stripe = getStripe();
         const dbUser = await prismaClient.user.findUniqueOrThrow({
             select: { email: true, id: true, stripeAccountId: true },
             where: { id: user.id }
@@ -50,6 +51,7 @@ export const startCreatorStripeOnboarding = createAuthAction(z.object({}), async
 export const getCreatorStripeDashboardLink = createAuthAction(z.object({}), async (_, { user }) => {
     await getPlatformUser('creator');
     try {
+        const stripe = getStripe();
         const dbUser = await prismaClient.user.findUniqueOrThrow({
             select: { stripeAccountId: true },
             where: { id: user.id }

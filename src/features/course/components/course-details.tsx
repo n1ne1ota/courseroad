@@ -3,7 +3,6 @@
 import type { JSX } from 'react';
 import { useState } from 'react';
 
-import { Switch } from '@courseroad/iota-ui';
 import {
   Card,
   CardContent,
@@ -13,11 +12,13 @@ import {
   Field,
   FieldError,
   FieldGroup,
-  HelpTooltip,
+  HelpPopover,
   Label,
   NumberInput,
-  PriceInput
+  PriceInput,
+  Switch
 } from '@courseroad/kurume-ui';
+
 import { BookOpen, FileText, ImageIcon, Settings } from 'lucide-react';
 import { Controller, useFormContext } from 'react-hook-form';
 
@@ -30,10 +31,10 @@ import { DescriptionInput } from '@/features/course/components/description-input
 import { LevelInput } from '@/features/course/components/level-input';
 import { ShortDescriptionInput } from '@/features/course/components/short-description-input';
 import { SlugInput } from '@/features/course/components/slug-input';
-import { ImageUpload } from '@/features/media/image-upload';
-import { VideoUpload } from '@/features/media/video-upload';
+import { ImageUpload } from '@/features/media/components/image-upload';
+import { VideoUpload } from '@/features/media/components/video-upload';
 
-export function CourseDetails(): JSX.Element {
+export function CourseDetails({ disabled = false }: { disabled?: boolean }): JSX.Element {
   const form = useFormContext();
   const [showIntroVideo, setShowIntroVideo] = useState(() => !!form.getValues('introVideoUrl'));
 
@@ -44,19 +45,19 @@ export function CourseDetails(): JSX.Element {
         {/* Course Details */}
         <Card>
           <CardHeader>
-            <CardTitle icon={<BookOpen />} iconColor='primary' iconVariant='glow'>
+            <CardTitle icon={<BookOpen />} iconColor='brand' iconVariant='soft'>
               Course Details
             </CardTitle>
             <CardDescription>Configure your course identity and settings.</CardDescription>
           </CardHeader>
-          <CardContent className='space-y-6'>
+          <CardContent className='@container/course-details space-y-6'>
             <FieldGroup>
-              <div className='grid grid-cols-1 gap-6 lg-screen:grid-cols-2'>
+              <div className='grid grid-cols-1 gap-6 @lg/course-details:grid-cols-2'>
                 <Controller
                   name='title'
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <HelpTooltip id='course-title' help='Add a title for your course' label='Title' />
+                      <HelpPopover id='course-title' help='Add a title for your course' label='Title' />
                       <TitleInput id='course-title' value={field.value} onChange={field.onChange} />
                       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
@@ -68,7 +69,7 @@ export function CourseDetails(): JSX.Element {
                   name='slug'
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <HelpTooltip id='course-slug' help='Create or generate a URL slug' label='Slug' />
+                      <HelpPopover id='course-slug' help='Create or generate a URL slug' label='Slug' />
                       <SlugInput
                         id='course-slug'
                         baseTitle={form.getValues('title')}
@@ -82,12 +83,12 @@ export function CourseDetails(): JSX.Element {
                 />
               </div>
 
-              <div className='grid grid-cols-1 gap-6 xs-screen:grid-cols-2'>
+              <div className='grid grid-cols-1 gap-6 @lg/course-details:grid-cols-2 @3xl/course-details:grid-cols-[repeat(2,minmax(0,1fr))_minmax(0,0.75fr)_minmax(0,1.25fr)]'>
                 <Controller
                   name='category'
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <HelpTooltip
+                      <HelpPopover
                         id='course-category'
                         help='Select a category the course belongs in'
                         label='Category'
@@ -103,21 +104,18 @@ export function CourseDetails(): JSX.Element {
                   name='level'
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <HelpTooltip id='course-level' help='Select the difficulty level of the course' label='Level' />
+                      <HelpPopover id='course-level' help='Select the difficulty level of the course' label='Level' />
                       <LevelInput id='course-level' value={field.value} onChange={field.onChange} />
                       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
                   )}
                   control={form.control}
                 />
-              </div>
-
-              <div className='grid grid-cols-1 gap-6 xs-screen:grid-cols-2'>
                 <Controller
                   name='price'
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <HelpTooltip id='course-price' help='Set the price of the course' label='Price' />
+                      <HelpPopover id='course-price' help='Set the price of the course' label='Price' />
                       <PriceInput
                         id='course-price'
                         currencies={currencies}
@@ -135,7 +133,7 @@ export function CourseDetails(): JSX.Element {
                   name='duration'
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <HelpTooltip id='course-duration' help='Set the total duration of the course' label='Duration' />
+                      <HelpPopover id='course-duration' help='Set the total duration of the course' label='Duration' />
                       <NumberInput
                         id='course-duration'
                         format='time'
@@ -156,7 +154,7 @@ export function CourseDetails(): JSX.Element {
         {/* Course Description */}
         <Card>
           <CardHeader>
-            <CardTitle icon={<FileText />} iconColor='primary' iconVariant='glow'>
+            <CardTitle icon={<FileText />} iconColor='brand' iconVariant='soft'>
               Course Description
             </CardTitle>
             <CardDescription>Describe your course for learners and search engines.</CardDescription>
@@ -167,7 +165,7 @@ export function CourseDetails(): JSX.Element {
                 name='shortDescription'
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <HelpTooltip
+                    <HelpPopover
                       id='course-short-description'
                       help='Describe concisely what the course is about'
                       label='Short Description'
@@ -187,12 +185,14 @@ export function CourseDetails(): JSX.Element {
                 name='description'
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <HelpTooltip
+                    <HelpPopover
                       id='course-description'
                       help='Explain in detail what the course is about'
                       label='Description'
                     />
-                    <DescriptionInput value={field.value} onChange={field.onChange} />
+                    <div id='course-description'>
+                      <DescriptionInput disabled={disabled} value={field.value} onChange={field.onChange} />
+                    </div>
                     {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                   </Field>
                 )}
@@ -209,7 +209,7 @@ export function CourseDetails(): JSX.Element {
           {/* Course Behavior */}
           <Card>
             <CardHeader>
-              <CardTitle icon={<Settings />} iconColor='primary' iconVariant='glow'>
+              <CardTitle icon={<Settings />} iconColor='brand' iconVariant='soft'>
                 Course Behavior
               </CardTitle>
               <CardDescription>Configure how the course behaves.</CardDescription>
@@ -228,6 +228,9 @@ export function CourseDetails(): JSX.Element {
                       setShowIntroVideo(checked);
                       if (!checked) {
                         form.setValue('introVideoUrl', '', { shouldDirty: true });
+                        form.setValue('introVideoGuid', '', { shouldDirty: true });
+                        form.setValue('introVideoFileName', '', { shouldDirty: true });
+                        form.setValue('introVideoFileSize', 0, { shouldDirty: true });
                       }
                     }}
                   />
@@ -239,7 +242,7 @@ export function CourseDetails(): JSX.Element {
           {/* Course Media */}
           <Card>
             <CardHeader>
-              <CardTitle icon={<ImageIcon />} iconColor='primary' iconVariant='glow'>
+              <CardTitle icon={<ImageIcon />} iconColor='brand' iconVariant='soft'>
                 Course Media
               </CardTitle>
               <CardDescription>Thumbnail and promotional assets.</CardDescription>
@@ -250,15 +253,16 @@ export function CourseDetails(): JSX.Element {
                   name='fileKey'
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <HelpTooltip
+                      <HelpPopover
                         id='course-fileKey'
                         help='Upload the thumbnail image for the course'
                         label='Thumbnail'
                       />
                       <ImageUpload
+                        disabled={disabled}
                         scope='course-cover'
                         value={field.value}
-                        onChange={(url: string | null) => field.onChange(url)}
+                        onChange={(url: string | null) => field.onChange(url ?? '')}
                       />
                       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
@@ -271,15 +275,28 @@ export function CourseDetails(): JSX.Element {
                     name='introVideoUrl'
                     render={({ field }) => (
                       <Field>
-                        <HelpTooltip
+                        <HelpPopover
                           id='course-intro-video'
                           help='Upload the introduction video for the course'
                           label='Intro Video'
                         />
                         <VideoUpload
-                          onUploadComplete={(url: string, videoId: string) => {
+                          disabled={disabled}
+                          fileName={form.watch('introVideoFileName')}
+                          fileSize={form.watch('introVideoFileSize')}
+                          title='Intro video'
+                          value={field.value ?? ''}
+                          onRemove={() => {
+                            field.onChange('');
+                            form.setValue('introVideoGuid', '', { shouldDirty: true });
+                            form.setValue('introVideoFileName', '', { shouldDirty: true });
+                            form.setValue('introVideoFileSize', 0, { shouldDirty: true });
+                          }}
+                          onUploadComplete={(url: string, videoId: string, file) => {
                             field.onChange(url);
                             form.setValue('introVideoGuid', videoId, { shouldDirty: true });
+                            form.setValue('introVideoFileName', file?.name ?? '', { shouldDirty: true });
+                            form.setValue('introVideoFileSize', file?.size ?? 0, { shouldDirty: true });
                           }}
                         />
                       </Field>

@@ -9,8 +9,8 @@ export interface GlobalData {
     url: Route;
 }
 
-// Header data types
-export interface HeaderData {
+// Navigation link types
+export interface NavLink {
     name: string;
     url: Route;
 }

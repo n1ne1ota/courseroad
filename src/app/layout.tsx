@@ -11,8 +11,6 @@ import { globalData } from '@/lib/config/data';
 import { env } from '@/lib/config/env';
 import { fontMono, fontSans } from '@/lib/config/fonts';
 
-import { PageSkeleton } from '@/components/layout/page-skeleton';
-
 import { Providers } from './providers';
 
 export const metadata: Metadata = {
@@ -65,7 +63,8 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <Providers themeProps={{ attribute: 'class', defaultTheme: 'dark' }}>
           <div className='flex min-h-screen flex-col'>
             <main className='flex flex-1 flex-col'>
-              <Suspense fallback={<PageSkeleton />}>{children}</Suspense>
+              {/* Each route group owns its loading UI; this boundary is only a last resort, so it stays empty. */}
+              <Suspense fallback={null}>{children}</Suspense>
             </main>
           </div>
         </Providers>

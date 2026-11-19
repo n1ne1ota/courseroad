@@ -2,15 +2,16 @@ import 'server-only';
 
 import { z } from 'zod';
 
+import { requireUploadContext } from '@/features/media/server/upload-access';
 import { getOrganizationContext } from '@/server/auth/organization-context';
 import { AccessError, getAuthenticatedUser } from '@/server/auth/session';
 import { prismaClient } from '@/server/db/client';
 import { getVideo } from '@/server/media/stream-service';
 
-/** Public previews remain public; private lessons require their course's access. */
+/** Public previews remain public unless the course is private; other lessons require course access. */
 export async function requirePlaybackAccess(input: string, slug?: string) {
     const videoId = z.uuid().parse(input);
-    const projection = { id: true, userId: true, organizationId: true, status: true } as const;
+    const projection = { id: true, userId: true, organizationId: true, status: true, visibility: true } as const;
     const intro = await prismaClient.course.findFirst({ where: { introVideoGuid: videoId }, select: projection });
     const lesson = intro
         ? null
@@ -19,13 +20,14 @@ export async function requirePlaybackAccess(input: string, slug?: string) {
               select: { isPreview: true, module: { select: { course: { select: projection } } } }
           });
     const course = intro ?? lesson?.module.course;
-    if (course && course.status === 'Published' && (intro || lesson?.isPreview)) return null;
+    if (course && course.status === 'Published' && course.visibility !== 'Private' && (intro || lesson?.isPreview))
+        return null;
     const user = await getAuthenticatedUser();
     if (!course) {
         // Uploads can be previewed before Save, but only inside their verified tenant.
-        const context = await getOrganizationContext(slug, 'creator');
+        const context = await requireUploadContext(user, slug);
         const video = await getVideo(videoId);
-        if (!video.title?.startsWith(`[${context.organizationId}] `)) throw new AccessError('Video not found', 404);
+        if (!video.title?.startsWith(`[${context.prefixId}] `)) throw new AccessError('Video not found', 404);
         return video;
     }
     if (course.organizationId) {

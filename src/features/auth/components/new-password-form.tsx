@@ -5,14 +5,14 @@ import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 
-import { AltArrowLeft as ArrowLeftIcon } from '@solar-icons/react-perf/Linear';
+import { Button, Card, Input, Spinner } from '@courseroad/iota-ui';
+import { Alert, AlertDescription } from '@courseroad/kurume-ui';
+
+import { AltArrowLeftIcon as ArrowLeftIcon } from '@solar-icons/react/linear';
 import { AnimatePresence, motion } from 'motion/react';
 
 import { resetPasswordWithToken } from '@/lib/auth/auth-client';
 import { routes } from '@/lib/routes';
-
-import { Button, Card, Input, Spinner } from '@courseroad/iota-ui';
-import { Alert, AlertDescription } from '@courseroad/kurume-ui';
 
 export function NewPasswordForm() {
   const searchParams = useSearchParams();
@@ -59,7 +59,7 @@ export function NewPasswordForm() {
               <p className='text-sm text-muted-foreground'>
                 Your password has been successfully reset. You can now sign in with your new password.
               </p>
-              <Button className='mt-2 w-full' color='primary' render={<Link href={routes.signIn} />} variant='flat'>
+              <Button className='mt-2 w-full' render={<Link href={routes.signIn} />} variant='secondary'>
                 Return to Sign In
               </Button>
             </motion.div>
@@ -95,7 +95,7 @@ export function NewPasswordForm() {
                 <Button
                   className='w-full'
                   type='submit'
-                  color='primary'
+                  color='brand'
                   disabled={!token}
                   isLoading={isPending}
                   spinner={<Spinner color='current' size='sm' />}

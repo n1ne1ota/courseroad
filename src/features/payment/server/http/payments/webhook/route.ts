@@ -7,18 +7,21 @@ import { Prisma } from '@prisma/client';
 
 import { env } from '@/server/config/env';
 import { prismaClient as prisma } from '@/server/db/client';
-import { stripe } from '@/server/payments/payments';
+import { getStripe } from '@/server/payments/payments';
 
 import type { Stripe } from '@/server/payments/types';
 
 export async function POST(req: Request) {
+    if (env.NEXT_PUBLIC_PAYMENTS_ENABLED === false || !env.STRIPE_WEBHOOK_SECRET) {
+        return new NextResponse('Payments are not enabled in this environment.', { status: 503 });
+    }
     const body = await req.text();
     const signature = (await headers()).get('Stripe-Signature') as string;
 
     let event: Stripe.Event;
 
     try {
-        event = stripe.webhooks.constructEvent(body, signature, env.STRIPE_WEBHOOK_SECRET);
+        event = getStripe().webhooks.constructEvent(body, signature, env.STRIPE_WEBHOOK_SECRET);
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
         return new NextResponse(`Webhook Error: ${errorMessage}`, { status: 400 });

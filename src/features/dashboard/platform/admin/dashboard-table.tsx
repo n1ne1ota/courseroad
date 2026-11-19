@@ -7,7 +7,8 @@ import type { ChartConfig } from '@kurume-ui/core';
 import type { ColumnFiltersState, ColumnVisibilityState, SortingState } from '@tanstack/react-table';
 import type { ColumnDef, Row } from '@tanstack/react-table';
 
-import { Checkbox, showToastPromise } from '@courseroad/iota-ui';
+import { Checkbox } from '@courseroad/iota-ui';
+
 import {
   closestCenter,
   DndContext,
@@ -20,7 +21,7 @@ import {
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers';
 import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Badge } from '@kurume-ui/core';
+import { Badge, showToastPromise } from '@kurume-ui/core';
 import { Button } from '@kurume-ui/core';
 import { Input } from '@kurume-ui/core';
 import { Label } from '@kurume-ui/core';
@@ -66,7 +67,7 @@ import { Area, AreaChart, CartesianGrid, XAxis } from 'recharts';
 
 import { dashboardTableFeatures } from '@/features/dashboard/shared/utils/table-features';
 
-import type { DashboardTableRow } from '@/features/dashboard/shared/schemas';
+import type { DashboardTableRow } from '@/features/dashboard/shared/schemas/schemas';
 import type { DashboardTableFeatures } from '@/features/dashboard/shared/utils/table-features';
 
 // Create a separate component for the drag handle
@@ -80,7 +81,7 @@ function DragHandle({ id }: { id: number }) {
       {...attributes}
       {...listeners}
       className='size-7 text-muted-foreground hover:bg-transparent'
-      size='icon'
+      size='icon-md'
       variant='ghost'
     >
       <GripVerticalIcon className='size-3 text-muted-foreground' />
@@ -143,7 +144,7 @@ const columns: ColumnDef<DashboardTableFeatures, DashboardTableRow>[] = [
     cell: ({ row }) => (
       <Badge className='flex gap-1 px-1.5 text-muted-foreground [&_svg]:size-3' variant='outline'>
         {row.original.status === 'Done' ? (
-          <CheckCircle2Icon className='text-green-500 dark:text-green-400' />
+          <CheckCircle2Icon className='text-success' />
         ) : (
           <Loader2 className='size-3 animate-spin' />
         )}
@@ -220,7 +221,7 @@ const columns: ColumnDef<DashboardTableFeatures, DashboardTableRow>[] = [
             <SelectTrigger className='h-8 w-40' id={`${row.original.id}-reviewer`}>
               <SelectValue placeholder='Assign reviewer' />
             </SelectTrigger>
-            <SelectContent align='end'>
+            <SelectContent positionerProps={{ align: 'end', alignItemWithTrigger: false }}>
               <SelectItem value='Eddie Lake'>Eddie Lake</SelectItem>
               <SelectItem value='Jamik Tashpulatov'>Jamik Tashpulatov</SelectItem>
             </SelectContent>
@@ -233,13 +234,19 @@ const columns: ColumnDef<DashboardTableFeatures, DashboardTableRow>[] = [
   {
     cell: () => (
       <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button className='flex size-8 text-muted-foreground data-[state=open]:bg-muted' size='icon' variant='ghost'>
-            <MoreVerticalIcon />
-            <span className='sr-only'>Open menu</span>
-          </Button>
+        <DropdownMenuTrigger
+          render={
+            <Button
+              className='flex size-8 text-muted-foreground data-[popup-open]:bg-muted'
+              size='icon-md'
+              variant='ghost'
+            />
+          }
+        >
+          <MoreVerticalIcon />
+          <span className='sr-only'>Open menu</span>
         </DropdownMenuTrigger>
-        <DropdownMenuContent className='w-32' align='end'>
+        <DropdownMenuContent className='w-32' positionerProps={{ align: 'end' }}>
           <DropdownMenuItem>Edit</DropdownMenuItem>
           <DropdownMenuItem>Make a copy</DropdownMenuItem>
           <DropdownMenuItem>Favorite</DropdownMenuItem>
@@ -326,12 +333,20 @@ export function AdminDashboardTable({ data: initialData }: { data: DashboardTabl
 
   return (
     <div className='flex w-full flex-col justify-start gap-6'>
-      <div className='flex items-center justify-between px-4 lg:px-6'>
+      <div className='flex items-center justify-between'>
         <Label className='sr-only' htmlFor='view-selector'>
           View
         </Label>
         <div className='@4xl/main:hidden'>
-          <Select defaultValue='outline'>
+          <Select
+            items={{
+              outline: 'Outline',
+              'past-performance': 'Past Performance',
+              'key-personnel': 'Key Personnel',
+              'focus-documents': 'Focus Documents'
+            }}
+            defaultValue='outline'
+          >
             <SelectTrigger className='flex w-fit' id='view-selector'>
               <SelectValue placeholder='Select a view' />
             </SelectTrigger>
@@ -356,15 +371,13 @@ export function AdminDashboardTable({ data: initialData }: { data: DashboardTabl
         />
         <div className='flex items-center gap-2'>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button size='sm' variant='outline'>
-                <ColumnsIcon />
-                <span className='hidden lg:inline'>Customize Columns</span>
-                <span className='lg:hidden'>Columns</span>
-                <ChevronDownIcon />
-              </Button>
+            <DropdownMenuTrigger render={<Button size='sm' variant='outline' />}>
+              <ColumnsIcon />
+              <span className='hidden lg:inline'>Customize Columns</span>
+              <span className='lg:hidden'>Columns</span>
+              <ChevronDownIcon />
             </DropdownMenuTrigger>
-            <DropdownMenuContent className='w-56' align='end'>
+            <DropdownMenuContent className='w-56' positionerProps={{ align: 'end' }}>
               {table
                 .getAllColumns()
                 .filter(column => typeof column.accessorFn !== 'undefined' && column.getCanHide())
@@ -390,7 +403,7 @@ export function AdminDashboardTable({ data: initialData }: { data: DashboardTabl
       </div>
 
       {activeView === 'outline' && (
-        <div className='relative flex flex-col gap-4 overflow-auto px-4 lg:px-6'>
+        <div className='relative flex flex-col gap-4 overflow-auto'>
           <div className='overflow-hidden rounded-lg border'>
             <DndContext
               id={sortableId}
@@ -446,13 +459,13 @@ export function AdminDashboardTable({ data: initialData }: { data: DashboardTabl
                 <Select
                   value={`${table.state.pagination.pageSize}`}
                   onValueChange={value => {
-                    table.setPageSize(Number(value));
+                    if (value !== null) table.setPageSize(Number(value));
                   }}
                 >
                   <SelectTrigger className='w-20' id='rows-per-page'>
                     <SelectValue placeholder={table.state.pagination.pageSize} />
                   </SelectTrigger>
-                  <SelectContent side='top'>
+                  <SelectContent positionerProps={{ side: 'top', alignItemWithTrigger: false }}>
                     {[10, 20, 30, 40, 50].map(pageSize => (
                       <SelectItem key={pageSize} value={`${pageSize}`}>
                         {pageSize}
@@ -477,7 +490,7 @@ export function AdminDashboardTable({ data: initialData }: { data: DashboardTabl
                 <Button
                   className='size-8'
                   disabled={!table.getCanPreviousPage()}
-                  size='icon'
+                  size='icon-md'
                   variant='outline'
                   onClick={() => table.previousPage()}
                 >
@@ -487,7 +500,7 @@ export function AdminDashboardTable({ data: initialData }: { data: DashboardTabl
                 <Button
                   className='size-8'
                   disabled={!table.getCanNextPage()}
-                  size='icon'
+                  size='icon-md'
                   variant='outline'
                   onClick={() => table.nextPage()}
                 >
@@ -497,7 +510,7 @@ export function AdminDashboardTable({ data: initialData }: { data: DashboardTabl
                 <Button
                   className='hidden size-8 lg:flex'
                   disabled={!table.getCanNextPage()}
-                  size='icon'
+                  size='icon-md'
                   variant='outline'
                   onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                 >
@@ -511,17 +524,17 @@ export function AdminDashboardTable({ data: initialData }: { data: DashboardTabl
       )}
 
       {activeView === 'past-performance' && (
-        <div className='flex flex-col px-4 lg:px-6'>
+        <div className='flex flex-col'>
           <div className='aspect-video w-full flex-1 rounded-lg border border-dashed' />
         </div>
       )}
       {activeView === 'key-personnel' && (
-        <div className='flex flex-col px-4 lg:px-6'>
+        <div className='flex flex-col'>
           <div className='aspect-video w-full flex-1 rounded-lg border border-dashed' />
         </div>
       )}
       {activeView === 'focus-documents' && (
-        <div className='flex flex-col px-4 lg:px-6'>
+        <div className='flex flex-col'>
           <div className='aspect-video w-full flex-1 rounded-lg border border-dashed' />
         </div>
       )}
@@ -540,11 +553,11 @@ const chartData = [
 
 const chartConfig = {
   desktop: {
-    color: 'var(--primary)',
+    color: 'var(--kurume-brand)',
     label: 'Desktop'
   },
   mobile: {
-    color: 'var(--primary)',
+    color: 'var(--kurume-brand)',
     label: 'Mobile'
   }
 } satisfies ChartConfig;
@@ -552,10 +565,10 @@ const chartConfig = {
 function TableCellViewer({ item }: { item: DashboardTableRow }) {
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button className='w-fit px-0 text-left hover:bg-transparent hover:underline' variant='ghost'>
-          {item.header}
-        </Button>
+      <SheetTrigger
+        render={<Button className='w-fit px-0 text-left hover:bg-transparent hover:underline' variant='ghost' />}
+      >
+        {item.header}
       </SheetTrigger>
       <SheetContent className='@container/sheet flex flex-col' side='right'>
         <SheetHeader className='gap-1'>
@@ -601,7 +614,7 @@ function TableCellViewer({ item }: { item: DashboardTableRow }) {
                 />
               </AreaChart>
             </ChartContainer>
-            <Separator />
+            <Separator role='presentation' />
             <div className='grid gap-2'>
               <div className='flex gap-2 leading-none font-medium'>
                 Trending up by 5.2% this month <TrendingUpIcon className='size-4' />
@@ -611,7 +624,7 @@ function TableCellViewer({ item }: { item: DashboardTableRow }) {
                 multiple lines and should wrap around.
               </div>
             </div>
-            <Separator />
+            <Separator role='presentation' />
           </div>
           <form className='flex flex-col gap-4'>
             <div className='flex flex-col gap-3'>
@@ -678,11 +691,7 @@ function TableCellViewer({ item }: { item: DashboardTableRow }) {
         </div>
         <SheetFooter className='mt-auto flex gap-2 sm:flex-col sm:space-x-0'>
           <Button className='w-full'>Submit</Button>
-          <SheetClose asChild>
-            <Button className='w-full' variant='outline'>
-              Done
-            </Button>
-          </SheetClose>
+          <SheetClose render={<Button className='w-full' variant='outline' />}>Done</SheetClose>
         </SheetFooter>
       </SheetContent>
     </Sheet>

@@ -1,0 +1,143 @@
+'use client';
+
+import type { Route } from 'next';
+import { useRouter } from 'next/navigation';
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
+} from '@courseroad/kurume-ui';
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from '@courseroad/kurume-ui/dashboard';
+
+import { Building2, ChevronsUpDown, Compass, Plus } from 'lucide-react';
+
+import { authClient } from '@/lib/auth/auth-client';
+import type { PlatformDashboardRole } from '@/lib/config/data';
+import { routes } from '@/lib/routes';
+
+import { CourseroadIcon } from '@/assets/icons/courseroad-icon';
+
+interface DashboardPlatformHeaderProps {
+  role?: PlatformDashboardRole;
+}
+
+type OrgListItem = {
+  id: string;
+  logo: string | null;
+  name: string;
+  slug: string;
+};
+
+const ROLE_LABELS: Record<PlatformDashboardRole, string> = {
+  admin: 'Admin Console',
+  creator: 'Creator Portal',
+  learner: 'Learner Dashboard',
+  staff: 'Staff Portal'
+};
+
+export function DashboardPlatformHeader({ role = 'learner' }: DashboardPlatformHeaderProps) {
+  const router = useRouter();
+  const { isMobile } = useSidebar();
+  const { data: orgs } = authClient.useListOrganizations();
+
+  const orgList: OrgListItem[] = (orgs ?? []).map(org => ({
+    id: org.id,
+    logo: org.logo ?? null,
+    name: org.name,
+    slug: org.slug
+  }));
+
+  const subtitle = ROLE_LABELS[role] ?? 'Platform';
+
+  async function handleOrgSwitch(org: OrgListItem) {
+    const result = await authClient.organization.setActive({ organizationId: org.id });
+    if (result.error) return;
+    router.push(`/organization/${org.slug}` as Route);
+  }
+
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                className='data-[popup-open]:bg-sidebar-accent data-[popup-open]:text-sidebar-accent-foreground'
+                size='lg'
+              />
+            }
+          >
+            <div className='flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand/10'>
+              <CourseroadIcon size={20} />
+            </div>
+            <div className='grid flex-1 text-left text-sm leading-tight'>
+              <span className='truncate font-semibold'>Courseroad</span>
+              <span className='truncate text-xs text-muted-foreground'>{subtitle}</span>
+            </div>
+            <ChevronsUpDown className='ml-auto size-4 text-muted-foreground' />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className='w-[var(--anchor-width)] min-w-64 rounded-lg'
+
+            positionerProps={{ align: 'start', side: isMobile ? 'bottom' : 'right', sideOffset: 4 }}
+          >
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className='text-xs text-muted-foreground'>Current Workspace</DropdownMenuLabel>
+              <DropdownMenuItem className='gap-3 p-2' onClick={() => router.push(routes.home)}>
+                <div className='flex size-8 shrink-0 items-center justify-center rounded-md border bg-brand/10'>
+                  <CourseroadIcon size={18} />
+                </div>
+                <div className='grid flex-1 text-sm leading-tight'>
+                  <span className='truncate font-medium'>Courseroad</span>
+                  <span className='truncate text-xs text-muted-foreground'>{subtitle}</span>
+                </div>
+                <div className='size-2 rounded-full bg-brand' />
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            {orgList.length > 0 && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel className='text-xs text-muted-foreground'>Organizations</DropdownMenuLabel>
+                  {orgList.map(org => (
+                    <DropdownMenuItem key={org.id} className='gap-3 p-2' onClick={() => handleOrgSwitch(org)}>
+                      <div className='flex size-8 shrink-0 items-center justify-center rounded-md border bg-muted/50'>
+                        {org.logo ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img className='size-5 rounded object-cover' alt={org.name} src={org.logo} />
+                        ) : (
+                          <Building2 className='size-4 text-muted-foreground' />
+                        )}
+                      </div>
+                      <div className='grid flex-1 text-sm leading-tight'>
+                        <span className='truncate font-medium'>{org.name}</span>
+                        <span className='truncate text-xs text-muted-foreground'>{org.slug}</span>
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+              </>
+            )}
+
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem className='gap-3 p-2' onClick={() => router.push(routes.courses as Route)}>
+                <Compass className='size-4 text-muted-foreground' />
+                Browse Marketplace
+              </DropdownMenuItem>
+              <DropdownMenuItem className='gap-3 p-2' onClick={() => router.push(routes.createOrganization as Route)}>
+                <Plus className='size-4 text-muted-foreground' />
+                Create Organization
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}

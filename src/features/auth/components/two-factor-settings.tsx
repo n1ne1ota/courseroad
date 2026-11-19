@@ -4,8 +4,9 @@
 
 import { useState, useTransition } from 'react';
 
-import { InputOTP, showToast } from '@courseroad/iota-ui';
-import { Button, Input, Label, Separator } from '@courseroad/kurume-ui';
+import { InputOTP } from '@courseroad/iota-ui';
+import { Button, Input, Label, Separator, showToast } from '@courseroad/kurume-ui';
+
 import { Check, Copy, Loader2, Lock, ShieldAlert, ShieldCheck } from 'lucide-react';
 import QRCode from 'react-qr-code';
 
@@ -138,7 +139,7 @@ export function TwoFactorSettings() {
     <div className='max-w-xl space-y-6'>
       <div className='space-y-1'>
         <h3 className='flex items-center gap-2 text-lg font-semibold'>
-          <Lock className='size-5 text-primary' />
+          <Lock className='size-5 text-brand' />
           Two-Factor Authentication (2FA)
         </h3>
         <p className='text-sm text-muted-foreground'>
@@ -222,7 +223,7 @@ export function TwoFactorSettings() {
             )}
           </div>
 
-          <Separator />
+          <Separator role='presentation' />
 
           <div className='space-y-3'>
             <h4 className='text-sm font-semibold'>2. Save Backup Codes</h4>
@@ -243,7 +244,7 @@ export function TwoFactorSettings() {
             </Button>
           </div>
 
-          <Separator />
+          <Separator role='presentation' />
 
           <div className='space-y-3'>
             <h4 className='text-sm font-semibold'>3. Verify Authenticator Code</h4>
@@ -294,7 +295,7 @@ export function TwoFactorSettings() {
             <Button size='sm' variant='ghost' onClick={resetForm}>
               Cancel
             </Button>
-            <Button disabled={isPending || !password} size='sm' variant='destructive' onClick={handleDisable}>
+            <Button color='destructive' disabled={isPending || !password} size='sm' onClick={handleDisable}>
               {isPending && <Loader2 className='mr-2 size-4 animate-spin' />}
               Disable 2FA
             </Button>

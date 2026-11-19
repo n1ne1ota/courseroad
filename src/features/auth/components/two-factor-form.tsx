@@ -5,13 +5,13 @@ import { useState, useTransition } from 'react';
 import type { Route } from 'next';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+import { Button, Card, InputOTP, Spinner } from '@courseroad/iota-ui';
+import { Alert, AlertDescription } from '@courseroad/kurume-ui';
+
 import { motion } from 'motion/react';
 
 import { authClient } from '@/lib/auth/auth-client';
 import { getCallbackUrl } from '@/lib/auth/callback-url';
-
-import { Button, Card, InputOTP, Spinner } from '@courseroad/iota-ui';
-import { Alert, AlertDescription } from '@courseroad/kurume-ui';
 
 import { HomeButton } from './home-button';
 
@@ -71,13 +71,13 @@ export function TwoFactorForm() {
           )}
 
           <div className='flex justify-center py-2'>
-            <InputOTP autoFocus color='primary' disabled={isPending} maxLength={6} value={code} onChange={setCode} />
+            <InputOTP autoFocus color='brand' disabled={isPending} maxLength={6} value={code} onChange={setCode} />
           </div>
 
           <Button
             className='w-full'
             type='button'
-            color='primary'
+            color='brand'
             disabled={code.length !== 6 || isPending}
             isLoading={isPending}
             spinner={<Spinner color='current' size='sm' />}

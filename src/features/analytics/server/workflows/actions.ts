@@ -2,7 +2,7 @@ import 'server-only';
 
 import { cookies, headers } from 'next/headers';
 
-import { rawFingerprintSchema } from '@/features/analytics/schemas';
+import { rawFingerprintSchema } from '@/features/analytics/schemas/schemas';
 import { identifyOrCreateVisitor } from '@/features/analytics/server/fingerprint-service';
 import { createSafeAction } from '@/server/actions/create-safe-action';
 import { prismaClient } from '@/server/db/client';

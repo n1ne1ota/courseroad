@@ -2,7 +2,7 @@ import 'server-only';
 
 import type { JSX } from 'react';
 
-import { CreateOrganizationForm } from '@/features/organization/create-organization-form';
+import { CreateOrganizationForm } from '@/features/organization/components/create-organization-form';
 import { loadCreateOrganizationPage } from '@/features/organization/server/loaders/create-organization';
 import { readForPage } from '@/server/auth/page-access';
 

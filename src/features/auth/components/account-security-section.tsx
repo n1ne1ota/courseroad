@@ -14,7 +14,7 @@ export function AccountSecuritySection() {
   return (
     <div className='space-y-8'>
       <TwoFactorSettings />
-      <Separator />
+      <Separator role='presentation' />
       <PasskeySettings />
     </div>
   );

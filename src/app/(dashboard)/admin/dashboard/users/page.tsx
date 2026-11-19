@@ -6,7 +6,7 @@ import type { UserRole } from '@/lib/utils/auth-navigation';
 
 import { getUsers } from '@/features/auth/server/users';
 import { UserManagementTable } from '@/features/dashboard/platform/admin/user-management-table';
-import { DashboardPlatformLayout } from '@/features/dashboard/shared/shell/dashboard-platform-layout';
+import { UserManagementTableSkeleton } from '@/features/dashboard/platform/admin/user-management-table-skeleton';
 
 export const metadata: Metadata = {
   description: 'Manage users, assign roles, and view user details.',
@@ -25,17 +25,15 @@ interface UsersPageProps {
 
 export default function AdminUsersPage({ searchParams }: UsersPageProps) {
   return (
-    <DashboardPlatformLayout role='admin' title='User Management'>
-      <div className='flex flex-col gap-6 px-4 lg:px-6'>
-        <div>
-          <h1 className='text-2xl font-semibold tracking-tight'>User Management</h1>
-          <p className='text-sm text-muted-foreground'>View all users, search by UID or email, and assign roles.</p>
-        </div>
-        <Suspense fallback={<div className='h-96 w-full animate-pulse rounded-lg bg-muted' />}>
-          <UsersContent searchParams={searchParams} />
-        </Suspense>
+    <>
+      <div>
+        <h1 className='text-2xl font-semibold tracking-tight'>User Management</h1>
+        <p className='text-sm text-muted-foreground'>View all users, search by UID or email, and assign roles.</p>
       </div>
-    </DashboardPlatformLayout>
+      <Suspense fallback={<UserManagementTableSkeleton />}>
+        <UsersContent searchParams={searchParams} />
+      </Suspense>
+    </>
   );
 }
 

@@ -4,6 +4,7 @@
 export const publicRoutes = {
     about: '/about',
     blog: '/blog',
+    changelog: '/changelog',
     contact: '/contact',
     courses: '/courses',
     home: '/',

@@ -2,7 +2,7 @@ import 'server-only';
 
 import { createOrgRoutes } from '@/lib/routes/org';
 
-import { getQuizzesByUserId } from '@/features/quiz/server/repositories/queries';
+import { getQuizzesByUserId } from '@/features/quiz/server/db/queries';
 import { getOrganizationContext } from '@/server/auth/organization-context';
 import { getAuthenticatedUser } from '@/server/auth/session';
 import { getTenantPrisma } from '@/server/db/get-tenant-prisma';

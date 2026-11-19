@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { type PurchaseItem } from '@/features/payment/types';
+import { type PurchaseItem } from '@/features/payment/types/types';
 import { getAuthenticatedUser } from '@/server/auth/session';
 import { prismaClient } from '@/server/db/client';
 

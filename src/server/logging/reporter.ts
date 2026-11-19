@@ -3,6 +3,7 @@ import type { ConsolaReporter, LogObject } from 'consola';
 import kleur from 'kleur';
 
 import { getLogContext } from './context';
+import { redact, serializeError } from './serialize';
 
 /**
  * Check if ANSI colors should be enabled based on TTY and environment overrides
@@ -38,20 +39,38 @@ const oneDark = {
     colon: (text: string) => (areColorsEnabled() ? `\x1b[38;2;82;160;166m${text}\x1b[0m` : text)
 };
 
+type Rgb = readonly [number, number, number];
+
 /**
- * Log level icons
+ * Log level colors (One Dark palette)
  */
-const LOG_ICONS: Record<string, string> = {
-    debug: '⚠',
-    error: '✕',
-    fatal: '✕',
-    info: '🛈',
-    log: '•',
-    success: '✔',
-    trace: '➔',
-    verbose: '…',
-    warn: '⚠'
+const LEVEL_COLORS: Record<string, Rgb> = {
+    debug: [86, 182, 194], // cyan
+    error: [224, 108, 117], // red
+    fail: [224, 108, 117],
+    fatal: [198, 120, 221], // purple
+    info: [97, 175, 239], // blue
+    log: [171, 178, 191], // light gray
+    ready: [152, 195, 121],
+    start: [97, 175, 239],
+    success: [152, 195, 121], // green
+    trace: [92, 99, 112], // dark gray
+    verbose: [92, 99, 112],
+    warn: [229, 192, 123] // yellow
 };
+
+/** Levels rendered bold, and whose message text is tinted to match the level */
+const BOLD_LEVELS = new Set(['error', 'fail', 'fatal', 'success']);
+const TINTED_MESSAGE_LEVELS = new Set(['error', 'fail', 'fatal', 'warn']);
+
+/**
+ * Wrap text in a 24-bit ANSI color (no-op when colors are disabled)
+ */
+function paint(text: string, color: Rgb, bold = false): string {
+    if (!areColorsEnabled()) return text;
+    const [r, g, b] = color;
+    return `\x1b[${bold ? '1;' : ''}38;2;${r};${g};${b}m${text}\x1b[0m`;
+}
 
 /**
  * Format JSON with One Dark syntax highlighting.
@@ -145,30 +164,17 @@ function extractError(error: unknown): { name: string; message: string; stack?: 
  * Format the log level badge with appropriate color
  */
 function formatLevel(type: string): string {
-    const label = type.toUpperCase().padEnd(7);
-    switch (type) {
-        case 'trace':
-        case 'verbose':
-            return kleur.gray(label);
-        case 'debug':
-            return kleur.cyan(label);
-        case 'info':
-        case 'log':
-            return kleur.green(label);
-        case 'success':
-        case 'ready':
-        case 'start':
-            return kleur.green().bold(label);
-        case 'warn':
-            return kleur.yellow(label);
-        case 'error':
-        case 'fail':
-            return kleur.red().bold(label);
-        case 'fatal':
-            return kleur.magenta().bold(label);
-        default:
-            return label;
-    }
+    const color = LEVEL_COLORS[type];
+    const label = type.toUpperCase();
+    return color ? paint(label, color, BOLD_LEVELS.has(type)) : label;
+}
+
+/**
+ * Tint the message for warnings and errors so they stand out in a busy terminal
+ */
+function formatMessage(type: string, message: string): string {
+    const color = LEVEL_COLORS[type];
+    return color && TINTED_MESSAGE_LEVELS.has(type) ? paint(message, color) : message;
 }
 
 /**
@@ -188,7 +194,6 @@ export const devReporter: ConsolaReporter = {
         const tagStr = tag ? kleur.gray(`[${tag}]`) : '';
 
         // Level
-        const icon = LOG_ICONS[type] ?? '•';
         const levelStr = formatLevel(type);
 
         // Message (first arg if it's a string)
@@ -196,8 +201,8 @@ export const devReporter: ConsolaReporter = {
         const message = typeof first === 'string' ? first : '';
         const extraArgs = typeof first === 'string' ? rest : args;
 
-        // Build header
-        const headerParts = [timestampStr, tagStr, icon, levelStr, message].filter(Boolean);
+        // Build header: [time] [tag] LEVEL message, always separated by a single space
+        const headerParts = [timestampStr, tagStr, levelStr, formatMessage(type, message)].filter(Boolean);
         const lines: string[] = [headerParts.join(' ')];
 
         // Active Log Context
@@ -234,8 +239,7 @@ export const devReporter: ConsolaReporter = {
                 }
 
                 if (Object.keys(restCtx).length) {
-                    lines.push('');
-                    lines.push(formatJSON(restCtx, 4));
+                    lines.push(formatJSON(restCtx));
                 }
                 continue;
             }
@@ -259,9 +263,20 @@ export const devReporter: ConsolaReporter = {
     }
 };
 
+/** Top-level keys owned by the logger; call-site fields that collide get a `field_` prefix */
+const RESERVED_KEYS = new Set(['err', 'level', 'msg', 'tag', 'time']);
+
+function renameReservedKeys(fields: Record<string, unknown>): Record<string, unknown> {
+    return Object.fromEntries(
+        Object.entries(fields).map(([key, value]) => [RESERVED_KEYS.has(key) ? `field_${key}` : key, value])
+    );
+}
+
 /**
  * Production JSON log stream reporter
- * Serializes trace metadata (from AsyncLocalStorage) and errors in a single-line JSON.
+ * Emits one flat JSON object per line: `time`, `level`, `tag`, `msg`, request context
+ * (AsyncLocalStorage) and call-site fields at the top level, plus `err` (with `cause` chain).
+ * Sensitive keys and signed-URL query parameters are redacted before serialization.
  */
 export const jsonReporter: ConsolaReporter = {
     log(logObj: LogObject) {
@@ -279,38 +294,25 @@ export const jsonReporter: ConsolaReporter = {
             if (arg === null || arg === undefined) continue;
 
             if (arg instanceof Error) {
-                error = {
-                    message: arg.message,
-                    name: arg.name,
-                    stack: arg.stack
-                };
+                error = serializeError(arg);
             } else if (typeof arg === 'object') {
                 const { error: errField, ...restObj } = arg as Record<string, unknown>;
-                if (errField) {
-                    if (errField instanceof Error) {
-                        error = {
-                            message: errField.message,
-                            name: errField.name,
-                            stack: errField.stack
-                        };
-                    } else {
-                        error = errField;
-                    }
-                }
+                if (errField) error = serializeError(errField);
                 Object.assign(meta, restObj);
             } else {
                 meta.info = String(arg);
             }
         }
 
+        // Flat entry: reserved fields first, then request context and call-site fields.
         const payload = {
-            context,
+            time: (date ?? new Date()).toISOString(),
             level: type,
-            message,
-            ...(Object.keys(meta).length > 0 ? { meta } : {}),
-            ...(error !== undefined ? { error } : {}),
-            tag,
-            timestamp: date ? date.toISOString() : new Date().toISOString()
+            ...(tag ? { tag } : {}),
+            msg: message,
+            ...renameReservedKeys(redact(context) as Record<string, unknown>),
+            ...renameReservedKeys(redact(meta) as Record<string, unknown>),
+            ...(error !== undefined ? { err: error } : {})
         };
 
         const output = JSON.stringify(payload);

@@ -4,7 +4,7 @@ import type { ComponentProps } from 'react';
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader } from '@courseroad/kurume-ui/dashboard';
 
-import { OrgSwitcher } from '@/features/organization/org-switcher';
+import { OrgSwitcher } from '@/features/organization/components/org-switcher';
 
 import type { DashboardData } from '@/types/data.types';
 

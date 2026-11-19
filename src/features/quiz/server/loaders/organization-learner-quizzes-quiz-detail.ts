@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { getQuizForLearner } from '@/features/quiz/server/repositories/queries';
+import { getQuizForLearner } from '@/features/quiz/server/db/queries';
 import { getOrganizationContext } from '@/server/auth/organization-context';
 import { missingResource } from '@/server/auth/read-errors';
 import { getAuthenticatedUser } from '@/server/auth/session';

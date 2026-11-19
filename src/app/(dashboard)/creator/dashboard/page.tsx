@@ -1,27 +1,52 @@
 import type { JSX } from 'react';
+import { Suspense } from 'react';
+
+import { Skeleton } from '@courseroad/kurume-ui';
 
 import { loadCreatorDashboardOverviewPage } from '@/features/course/server/loaders/platform-creator';
 import { InstructorMetrics } from '@/features/dashboard/platform/creator/instructor-metrics';
-import { DashboardPlatformLayout } from '@/features/dashboard/shared/shell/dashboard-platform-layout';
+import { InstructorMetricsSkeleton } from '@/features/dashboard/platform/creator/instructor-metrics-skeleton';
 import { readForPage } from '@/server/auth/page-access';
 
-export default async function CreatorDashboardOverviewPage(): Promise<JSX.Element> {
+const OVERVIEW_DESCRIPTION = 'Here is an overview of your direct-to-consumer courses and learner performance.';
+
+async function CreatorOverview(): Promise<JSX.Element> {
   const { user, activeLearners, totalEarnings, totalSales } = await readForPage(() =>
     loadCreatorDashboardOverviewPage()
   );
 
   return (
-    <DashboardPlatformLayout role='creator' title='Dashboard Overview'>
-      <div className='flex flex-col gap-6'>
-        <div>
-          <h2 className='text-2xl font-bold tracking-tight text-foreground'>Welcome back, {user.firstName}!</h2>
-          <p className='text-sm text-muted-foreground'>
-            Here is an overview of your direct-to-consumer courses and learner performance.
-          </p>
-        </div>
-
-        <InstructorMetrics metrics={{ activeLearners, totalEarnings, totalSales }} />
+    <>
+      <div>
+        <h2 className='text-2xl font-bold tracking-tight text-foreground'>Welcome back, {user.firstName}!</h2>
+        <p className='text-sm text-muted-foreground'>{OVERVIEW_DESCRIPTION}</p>
       </div>
-    </DashboardPlatformLayout>
+
+      <InstructorMetrics metrics={{ activeLearners, totalEarnings, totalSales }} />
+    </>
+  );
+}
+
+function CreatorOverviewSkeleton(): JSX.Element {
+  return (
+    <>
+      <div className='space-y-2'>
+        <Skeleton className='h-8 w-72 max-w-full' shape='text' />
+        <p className='text-sm text-muted-foreground'>{OVERVIEW_DESCRIPTION}</p>
+      </div>
+
+      <InstructorMetricsSkeleton />
+    </>
+  );
+}
+
+/** The shell and layout stream first; the greeting and metrics suspend together on one skeleton. */
+export default function CreatorDashboardOverviewPage(): JSX.Element {
+  return (
+    <>
+      <Suspense fallback={<CreatorOverviewSkeleton />}>
+        <CreatorOverview />
+      </Suspense>
+    </>
   );
 }

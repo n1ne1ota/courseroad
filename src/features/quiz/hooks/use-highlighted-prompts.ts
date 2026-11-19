@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import type { QuizQuestion } from '../quiz-player-types';
+import type { QuizQuestion } from '../types/quiz-player-types';
 
 /**
  * Regex that matches `<pre...><code class="language-xxx">...</code></pre>` blocks.

@@ -1,9 +1,9 @@
 import type { Route } from 'next';
 import Link from 'next/link';
 
-import { AltArrowLeft as ArrowLeftIcon } from '@solar-icons/react-perf/Linear';
-
 import { Button } from '@courseroad/iota-ui';
+
+import { AltArrowLeftIcon as ArrowLeftIcon } from '@solar-icons/react/linear';
 
 /**
  * Reusable back to home link for authentication forms

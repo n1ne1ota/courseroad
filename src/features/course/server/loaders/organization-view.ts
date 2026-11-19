@@ -7,7 +7,7 @@ import { createOrgRoutes } from '@/lib/routes/org';
 import {
     getLearnerEnrollmentsWithProgressDetails,
     getUserLessonProgress
-} from '@/features/course/server/repositories/queries/get-enrollments';
+} from '@/features/course/server/db/queries/get-enrollments';
 import { getOrganizationContext } from '@/server/auth/organization-context';
 import { destination } from '@/server/auth/read-errors';
 import { getAuthenticatedUser } from '@/server/auth/session';

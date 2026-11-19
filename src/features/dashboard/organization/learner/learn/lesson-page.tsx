@@ -2,12 +2,13 @@ import 'server-only';
 
 import Link from 'next/link';
 
-import { Button } from '@courseroad/kurume-ui';
+import { Button, buttonVariants } from '@courseroad/kurume-ui';
 import { HtmlContent } from '@courseroad/kurume-ui/editor';
+
 import { CheckCircle2, ChevronRight } from 'lucide-react';
 
 import { loadLessonView } from '@/features/course/server/loaders/organization-learner-learn-lesson';
-import { VideoPlayer } from '@/features/media/video-player';
+import { VideoPlayer } from '@/features/media/components/video-player';
 import { readForPage } from '@/server/auth/page-access';
 
 type LessonViewProps = {
@@ -55,12 +56,14 @@ export async function LessonView({ courseId, lessonId, slug }: LessonViewProps) 
           )}
 
           {nextLessonId && (
-            <Button className='w-full sm:w-auto' asChild variant='primary'>
-              <Link href={orgRoutes.learnLesson(courseId, nextLessonId)}>
-                Next Lesson
-                <ChevronRight className='ml-2 size-4' />
-              </Link>
-            </Button>
+            <Link
+              className={buttonVariants({ className: 'w-full sm:w-auto' })}
+              href={orgRoutes.learnLesson(courseId, nextLessonId)}
+              data-slot='button-link'
+            >
+              Next Lesson
+              <ChevronRight className='ml-2 size-4' />
+            </Link>
           )}
         </div>
       </div>

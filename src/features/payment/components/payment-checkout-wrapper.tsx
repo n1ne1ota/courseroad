@@ -6,9 +6,14 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useTheme } from 'next-themes';
 
+import { env } from '@/lib/config/env';
+
 // Make sure to call `loadStripe` outside of a component's render to avoid
 // recreating the `Stripe` object on every render.
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
+const stripePromise =
+  env.NEXT_PUBLIC_PAYMENTS_ENABLED && env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+    ? loadStripe(env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
+    : null;
 
 interface PaymentCheckoutWrapperProps {
   children: ReactNode;
@@ -17,6 +22,8 @@ interface PaymentCheckoutWrapperProps {
 
 export function PaymentCheckoutWrapper({ children, clientSecret }: PaymentCheckoutWrapperProps) {
   const { resolvedTheme } = useTheme();
+
+  if (!env.NEXT_PUBLIC_PAYMENTS_ENABLED) return <p role='status'>Payments are not enabled in this environment.</p>;
 
   return (
     <Elements

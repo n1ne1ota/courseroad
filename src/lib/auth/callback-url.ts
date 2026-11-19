@@ -1,5 +1,3 @@
-'use client';
-
 import { authPagePaths, type AuthRoute } from '@/lib/routes';
 
 /**
@@ -14,18 +12,20 @@ import { authPagePaths, type AuthRoute } from '@/lib/routes';
  * Only allows paths that start with '/' and don't start with '//'
  */
 export function isValidInternalUrl(url: string): boolean {
-    if (!url) return false;
-
-    // Must start with / but not // (prevents protocol-relative URLs)
-    if (!url.startsWith('/') || url.startsWith('//')) return false;
-
-    // Prevent URLs with special schemes
-    const lowercaseUrl = url.toLowerCase();
-    if (lowercaseUrl.includes('javascript:') || lowercaseUrl.includes('data:') || lowercaseUrl.includes('vbscript:')) {
+    if (!url.startsWith('/') || url.startsWith('//') || /[\\\s\u0000-\u001f\u007f]/.test(url)) return false;
+    try {
+        const parsed = new URL(url, 'https://internal.invalid');
+        const path = url.split(/[?#]/)[0];
+        // Reject encoded path separators/dot segments and normalization tricks;
+        // query parameters can still contain ordinary percent-encoded values.
+        if (!path || path.includes('%') || parsed.origin !== 'https://internal.invalid' || parsed.pathname !== path)
+            return false;
+        return ![...authPagePaths, '/auth', '/api/auth'].some(
+            authPath => parsed.pathname === authPath || parsed.pathname.startsWith(`${authPath}/`)
+        );
+    } catch {
         return false;
     }
-
-    return true;
 }
 
 /**

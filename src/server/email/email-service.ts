@@ -13,7 +13,8 @@ import { logs } from '@/server/logging/server';
 const mail = createMailService(
     {
         apiKey: env.RESEND_API_KEY,
-        defaultFrom: 'Courseroad <onboarding@resend.dev>'
+        appUrl: env.NEXT_PUBLIC_APP_URL,
+        defaultFrom: env.RESEND_FROM_EMAIL
     },
     {
         error: (message, error) => logs.api.error(message, error),
@@ -29,3 +30,9 @@ export const sendPasswordResetEmail = mail.sendPasswordReset;
 
 /** Send Magic Link Email */
 export const sendMagicLinkEmail = mail.sendMagicLink;
+
+/** Submit an organization invitation; provider failures propagate to the caller. */
+export const sendOrganizationInvitationEmail = mail.sendOrganizationInvitation;
+
+/** Submit up to 100 individually addressed emails in one request. */
+export const sendEmailBatch = mail.sendBatch;

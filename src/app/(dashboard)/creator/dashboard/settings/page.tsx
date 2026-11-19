@@ -6,14 +6,13 @@ import Link from 'next/link';
 import { Button } from '@courseroad/iota-ui';
 
 import { AccountSecuritySection } from '@/features/auth/components/account-security-section';
-import { DashboardPlatformLayout } from '@/features/dashboard/shared/shell/dashboard-platform-layout';
 import { requireRole } from '@/server/auth/require-role';
 
 export default async function CreatorDashboardSettingsPage(): Promise<JSX.Element> {
   const user = await requireRole('CREATOR');
 
   return (
-    <DashboardPlatformLayout role='creator' title='Instructor Settings'>
+    <>
       <div className='flex max-w-4xl flex-col gap-6'>
         <div>
           <h2 className='text-2xl font-bold tracking-tight text-foreground'>Instructor Settings</h2>
@@ -37,14 +36,14 @@ export default async function CreatorDashboardSettingsPage(): Promise<JSX.Elemen
             <div>
               <p className='text-sm font-semibold text-muted-foreground'>Account Type</p>
               <div className='mt-1.5'>
-                <span className='inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary uppercase'>
+                <span className='inline-flex items-center rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-semibold text-brand uppercase'>
                   B2C Creator
                 </span>
               </div>
             </div>
             <div>
               <p className='text-sm font-semibold text-muted-foreground'>Public Profile URL</p>
-              <p className='mt-1 cursor-pointer text-base font-medium text-primary hover:underline'>
+              <p className='mt-1 cursor-pointer text-base font-medium text-brand hover:underline'>
                 /creators/{user.username || user.id}
               </p>
             </div>
@@ -63,7 +62,7 @@ export default async function CreatorDashboardSettingsPage(): Promise<JSX.Elemen
                 </p>
               </div>
               <input
-                className='border-default-200 size-4 rounded text-primary focus:ring-primary'
+                className='border-default-200 size-4 rounded text-brand focus:ring-brand'
                 type='checkbox'
                 defaultChecked
               />
@@ -77,7 +76,7 @@ export default async function CreatorDashboardSettingsPage(): Promise<JSX.Elemen
                 </p>
               </div>
               <input
-                className='border-default-200 size-4 rounded text-primary focus:ring-primary'
+                className='border-default-200 size-4 rounded text-brand focus:ring-brand'
                 type='checkbox'
                 defaultChecked
               />
@@ -92,12 +91,10 @@ export default async function CreatorDashboardSettingsPage(): Promise<JSX.Elemen
 
         <div className='flex justify-end gap-4'>
           <Link href={'/creator/dashboard/profile' as Route}>
-            <Button className='rounded-xl' color='primary'>
-              Edit Profile
-            </Button>
+            <Button className='rounded-xl'>Edit Profile</Button>
           </Link>
         </div>
       </div>
-    </DashboardPlatformLayout>
+    </>
   );
 }

@@ -5,9 +5,9 @@ import { useSyncExternalStore } from 'react';
 import type { Route } from 'next';
 import Link from 'next/link';
 
-import { getAuthPath } from '@/lib/utils/auth-navigation';
-
 import { Button, Spinner } from '@courseroad/iota-ui';
+
+import { getAuthPath } from '@/lib/utils/auth-navigation';
 
 import type { UserDropdownData } from '@/types/user.types';
 
@@ -41,13 +41,13 @@ export function AuthButton({ isPending, user, variant = 'desktop' }: AuthButtonP
             radius='full'
             size='sm'
             spinner={<Spinner color='current' size='sm' />}
-            variant='flat'
+            variant='secondary'
           />
           <Button
             className='flex-1'
             disabled
             isLoading
-            color='primary'
+            color='brand'
             radius='full'
             size='sm'
             spinner={<Spinner color='current' size='sm' />}
@@ -58,10 +58,10 @@ export function AuthButton({ isPending, user, variant = 'desktop' }: AuthButtonP
 
     return (
       <div className='flex items-center gap-2'>
-        <Button disabled color='secondary' radius='full' size='sm' variant='solid'>
+        <Button disabled radius='full' size='sm' variant='secondary'>
           Sign In
         </Button>
-        <Button disabled color='primary' radius='full' size='sm'>
+        <Button disabled color='brand' radius='full' size='sm'>
           Sign Up
         </Button>
       </div>
@@ -76,18 +76,17 @@ export function AuthButton({ isPending, user, variant = 'desktop' }: AuthButtonP
         <Button
           className='flex-1'
           as={Link}
-          color='secondary'
           href={getAuthPath('signIn') as Route}
           radius='full'
           size='sm'
-          variant='solid'
+          variant='secondary'
         >
           Sign In
         </Button>
         <Button
           className='flex-1'
           as={Link}
-          color='primary'
+          color='brand'
           href={getAuthPath('signUp') as Route}
           radius='full'
           size='sm'
@@ -100,10 +99,10 @@ export function AuthButton({ isPending, user, variant = 'desktop' }: AuthButtonP
 
   return (
     <div className='flex items-center gap-2'>
-      <Button as={Link} color='secondary' href={getAuthPath('signIn') as Route} radius='full' size='sm' variant='solid'>
+      <Button as={Link} href={getAuthPath('signIn') as Route} radius='full' size='sm' variant='secondary'>
         Sign In
       </Button>
-      <Button as={Link} color='primary' href={getAuthPath('signUp') as Route} radius='full' size='sm'>
+      <Button as={Link} color='brand' href={getAuthPath('signUp') as Route} radius='full' size='sm'>
         Sign Up
       </Button>
     </div>

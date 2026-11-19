@@ -14,8 +14,8 @@ type TenantBranding = {
 
 const DEFAULT_BRANDING: TenantBranding = {
     logoUrl: null,
-    primaryColor: 'hsl(var(--primary))',
-    secondaryColor: 'hsl(var(--accent))'
+    primaryColor: 'var(--kurume-typography)',
+    secondaryColor: 'var(--kurume-surface-4)'
 };
 
 /**

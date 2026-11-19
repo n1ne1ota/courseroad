@@ -7,11 +7,11 @@ import type { Route } from 'next';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
-import { showErrorToast, showSuccessToast } from '@courseroad/iota-ui';
-import { Button } from '@courseroad/kurume-ui';
+import { Button, buttonVariants, showErrorToast, showSuccessToast } from '@courseroad/kurume-ui';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@courseroad/kurume-ui';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@courseroad/kurume-ui';
 import { HtmlContent } from '@courseroad/kurume-ui/editor';
+
 import {
   CheckCircle2Icon,
   ClipboardCheckIcon,
@@ -32,9 +32,9 @@ import { extractOrgSlug } from '@/lib/routes/org';
 import { cn } from '@/lib/utils/cn';
 
 import { updateQuiz } from '@/features/quiz/actions/quiz-actions';
-import { QuizVisibility } from '@/features/quiz/question-types';
+import { QuizVisibility } from '@/features/quiz/types/question-types';
 
-import type { Quiz, QuizOption, QuizQuestion } from '@/features/quiz/editor-types';
+import type { Quiz, QuizOption, QuizQuestion } from '@/features/quiz/types/editor-types';
 
 type QuizWithQuestions = Quiz & {
   questions: (QuizQuestion & {
@@ -147,16 +147,16 @@ export function QuizPublishPage({ quiz }: QuizPublishPageProps): JSX.Element {
               <h3 className='text-2xl font-semibold tracking-tight'>
                 {quiz.title || <span className='text-muted-foreground italic'>Untitled Quiz</span>}
               </h3>
-              <Button className='w-full xs-screen:w-auto' asChild size='sm' variant='outline'>
-                <Link
-                  href={`/organization/${orgSlug}/quizzes/${quiz.id}` as Route}
-                  rel='noopener noreferrer'
-                  target='_blank'
-                >
-                  <EyeIcon className='mr-2 h-4 w-4' />
-                  Preview
-                </Link>
-              </Button>
+              <Link
+                className={buttonVariants({ className: 'w-full xs-screen:w-auto', size: 'sm', variant: 'outline' })}
+                href={`/organization/${orgSlug}/quizzes/${quiz.id}` as Route}
+                rel='noopener noreferrer'
+                target='_blank'
+                data-slot='button-link'
+              >
+                <EyeIcon className='mr-2 h-4 w-4' />
+                Preview
+              </Link>
             </div>
 
             <div className='rounded-xl border bg-muted/20 px-4 py-3'>
@@ -191,9 +191,16 @@ export function QuizPublishPage({ quiz }: QuizPublishPageProps): JSX.Element {
             {/* Publish Actions: Full width stack on base, side-by-side on xs-screen, stack again or flex on 2xl-screen depending on space */}
             <div className='flex flex-col gap-3 xs-screen:flex-row xs-screen:items-center 2xl-screen:flex-col 4xl-screen:flex-row'>
               <Select
+                items={{
+                  [QuizVisibility.DRAFT]: 'Draft',
+                  [QuizVisibility.PUBLIC]: 'Public',
+                  [QuizVisibility.PRIVATE]: 'Private'
+                }}
                 disabled={isPending}
                 value={visibility}
-                onValueChange={val => dispatchVisibility(val as QuizVisibility)}
+                onValueChange={val => {
+                  if (val !== null) dispatchVisibility(val);
+                }}
               >
                 <SelectTrigger className='w-full'>
                   <SelectValue />
@@ -213,7 +220,7 @@ export function QuizPublishPage({ quiz }: QuizPublishPageProps): JSX.Element {
                 disabled={isPending || (!canPublish && !isLive)}
                 isLoading={isPending}
                 size='sm'
-                variant={isLive ? 'outline' : 'default'}
+                variant={isLive ? 'outline' : 'primary'}
                 onClick={handlePublishToggle}
               >
                 {isPending ? null : isLive ? (
@@ -292,7 +299,7 @@ function ChecklistItem({ checked, label }: { checked: boolean; label: string }):
   return (
     <div className='flex items-center gap-2.5'>
       {checked ? (
-        <CheckCircle2Icon className='h-4 w-4 shrink-0 text-green-500' />
+        <CheckCircle2Icon className='h-4 w-4 shrink-0 text-success' />
       ) : (
         <XCircleIcon className='h-4 w-4 shrink-0 text-muted-foreground' />
       )}

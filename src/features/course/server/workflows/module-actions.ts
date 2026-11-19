@@ -1,65 +1,40 @@
 import 'server-only';
 
-import { revalidatePath } from 'next/cache';
-
 import {
     createModuleSchema,
     deleteModuleSchema,
     reorderModulesSchema,
     updateModuleSchema
-} from '@/features/course/module-schemas';
+} from '@/features/course/schemas/module-schemas';
+import { executeOrganizationCurriculum } from '@/features/course/server/workflows/curriculum-actions';
 import {
-    createModule as createModuleMutation,
-    deleteModule as deleteModuleMutation,
-    reorderModules as reorderModulesMutation,
-    updateModule as updateModuleMutation
-} from '@/features/course/server/repositories/mutations/modules';
+    legacyOrderedIds,
+    organizationModule,
+    savedRecord
+} from '@/features/course/server/workflows/legacy-curriculum';
 import { createTenantAction } from '@/server/actions/create-tenant-action';
-import { getTenantPrisma } from '@/server/db/get-tenant-prisma';
 
 export const createModule = createTenantAction('creator', createModuleSchema, async (data, ctx) => {
-    const prisma = await getTenantPrisma();
-
-    const createdModule = await createModuleMutation(prisma, data, ctx.user.id, ctx.member.role, ctx.organizationId);
-
-    revalidatePath(`/organization/${ctx.organizationSlug}/${ctx.member.role}/dashboard/courses/${data.courseId}`);
-    return createdModule;
+    const result = await executeOrganizationCurriculum({ ...data, operation: 'createModule' }, ctx);
+    return savedRecord(result.modules.at(-1));
 });
-
 export const updateModule = createTenantAction('creator', updateModuleSchema, async (data, ctx) => {
-    const prisma = await getTenantPrisma();
-
-    const updatedModule = await updateModuleMutation(prisma, data, ctx.user.id, ctx.member.role);
-
-    const courseModule = await prisma.module.findUnique({
-        select: { courseId: true },
-        where: { id: data.moduleId }
-    });
-    if (courseModule) {
-        revalidatePath(
-            `/organization/${ctx.organizationSlug}/${ctx.member.role}/dashboard/courses/${courseModule.courseId}`
-        );
-    }
-
-    return updatedModule;
+    const courseModule = await organizationModule(data.moduleId, ctx.organizationId);
+    const result = await executeOrganizationCurriculum(
+        { ...data, courseId: courseModule.courseId, operation: 'updateModule' },
+        ctx
+    );
+    return savedRecord(result.modules.find(row => row.id === courseModule.id));
 });
-
 export const deleteModule = createTenantAction('creator', deleteModuleSchema, async (data, ctx) => {
-    const prisma = await getTenantPrisma();
-
-    const courseId = await deleteModuleMutation(prisma, data, ctx.user.id, ctx.member.role);
-
-    revalidatePath(`/organization/${ctx.organizationSlug}/${ctx.member.role}/dashboard/courses/${courseId}`);
+    const courseModule = await organizationModule(data.moduleId, ctx.organizationId);
+    await executeOrganizationCurriculum({ ...data, courseId: courseModule.courseId, operation: 'deleteModule' }, ctx);
     return true;
 });
-
 export const reorderModules = createTenantAction('creator', reorderModulesSchema, async (data, ctx) => {
-    const prisma = await getTenantPrisma();
-
-    const courseId = await reorderModulesMutation(prisma, data, ctx.user.id, ctx.member.role);
-
-    if (courseId) {
-        revalidatePath(`/organization/${ctx.organizationSlug}/${ctx.member.role}/dashboard/courses/${courseId}`);
-    }
+    if (!data[0]) return true;
+    const ids = legacyOrderedIds(data);
+    const courseModule = await organizationModule(data[0].id, ctx.organizationId);
+    await executeOrganizationCurriculum({ courseId: courseModule.courseId, operation: 'reorderModules', ids }, ctx);
     return true;
 });

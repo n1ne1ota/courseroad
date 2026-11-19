@@ -1,19 +1,31 @@
+import { Suspense } from 'react';
+
 import type { Route } from 'next';
 import Link from 'next/link';
 
-import { Button } from '@courseroad/kurume-ui';
+import { Button, buttonVariants } from '@courseroad/kurume-ui';
 import { HtmlContent } from '@courseroad/kurume-ui/editor';
+
 import { CheckCircle2, ChevronRight } from 'lucide-react';
 
+import { LessonPageSkeleton } from '@/features/course/components/learn-skeletons';
 import { loadB2CLessonPage } from '@/features/course/server/loaders/platform-learner-learn-course-lesson';
-import { VideoPlayer } from '@/features/media/video-player';
+import { VideoPlayer } from '@/features/media/components/video-player';
 import { readForPage } from '@/server/auth/page-access';
 
 type LessonPageProps = {
   params: Promise<{ courseId: string; lessonId: string }>;
 };
 
-export default async function B2CLessonPage(props: LessonPageProps) {
+export default function B2CLessonPage(props: LessonPageProps) {
+  return (
+    <Suspense fallback={<LessonPageSkeleton />}>
+      <B2CLessonContent {...props} />
+    </Suspense>
+  );
+}
+
+async function B2CLessonContent(props: LessonPageProps) {
   const { courseId, lesson, isCompleted, nextLessonId, markCompleteAction } = await readForPage(() =>
     loadB2CLessonPage(props)
   );
@@ -52,12 +64,14 @@ export default async function B2CLessonPage(props: LessonPageProps) {
           )}
 
           {nextLessonId && (
-            <Button className='w-full sm:w-auto' asChild variant='primary'>
-              <Link href={`/learner/dashboard/learn/${courseId}/${nextLessonId}` as Route}>
-                Next Lesson
-                <ChevronRight className='ml-2 size-4' />
-              </Link>
-            </Button>
+            <Link
+              className={buttonVariants({ className: 'w-full sm:w-auto' })}
+              href={`/learner/dashboard/learn/${courseId}/${nextLessonId}` as Route}
+              data-slot='button-link'
+            >
+              Next Lesson
+              <ChevronRight className='ml-2 size-4' />
+            </Link>
           )}
         </div>
       </div>

@@ -1,7 +1,6 @@
 import type { JSX } from 'react';
 
 import { PayoutSetupCard } from '@/features/dashboard/platform/creator/payout-setup-card';
-import { DashboardPlatformLayout } from '@/features/dashboard/shared/shell/dashboard-platform-layout';
 import { loadCreatorDashboardEarningsPage } from '@/features/payment/server/loaders/platform-creator-earnings';
 import { readForPage } from '@/server/auth/page-access';
 
@@ -11,8 +10,8 @@ export default async function CreatorDashboardEarningsPage(): Promise<JSX.Elemen
   );
 
   return (
-    <DashboardPlatformLayout role='creator' title='Earnings & Payouts'>
-      <div className='flex flex-col gap-8'>
+    <>
+      <div className='flex flex-col gap-6'>
         <div>
           <h2 className='text-2xl font-bold tracking-tight text-foreground'>Earnings & Payouts</h2>
           <p className='text-sm text-muted-foreground'>
@@ -88,6 +87,6 @@ export default async function CreatorDashboardEarningsPage(): Promise<JSX.Elemen
           </div>
         </div>
       </div>
-    </DashboardPlatformLayout>
+    </>
   );
 }

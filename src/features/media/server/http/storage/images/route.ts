@@ -8,8 +8,9 @@ import { detectBot, slidingWindow } from '@arcjet/next';
 import type { ImageUploadScope } from '@/lib/constants/image-upload';
 import { getRequestIdFromRequest } from '@/lib/utils/request-id';
 
+import { resolveMediaContext } from '@/features/media/server/media-context';
+import { requireUploadContext } from '@/features/media/server/upload-access';
 import { auth } from '@/server/auth/auth';
-import { getOrganizationContext } from '@/server/auth/organization-context';
 import { AccessError } from '@/server/auth/session';
 import { logs } from '@/server/logging/server';
 import { UploadRouteError, uploadScopedImage } from '@/server/media/image-upload-service';
@@ -40,19 +41,10 @@ export async function handleImageUploadRequest(req: NextRequest, scopeOverride?:
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { organizationId } = await getOrganizationContext(
-            req.headers.get('x-organization-slug') ?? undefined,
-            'creator'
+        const { organizationId, owner } = await requireUploadContext(
+            user,
+            req.headers.get('x-organization-slug') ?? undefined
         );
-        if (!organizationId) {
-            logs.upload.warn('Image upload rejected: no active organization', {
-                action: 'upload_no_org',
-                requestId,
-                uploadType: 'image',
-                userId: user.id
-            });
-            return NextResponse.json({ error: 'No active organization' }, { status: 403 });
-        }
 
         const decision = await arcjet
             .withRule(detectBot({ allow: [], mode: 'LIVE' }))
@@ -83,9 +75,16 @@ export async function handleImageUploadRequest(req: NextRequest, scopeOverride?:
         const file = form.get('file');
         const scope = scopeOverride ?? form.get('scope');
 
+        const context = await resolveMediaContext(
+            { courseId: form.get('courseId'), lessonId: form.get('lessonId'), quizId: form.get('quizId') },
+            { organizationId, userId: user.id }
+        );
+
         const result = await uploadScopedImage({
+            context,
             file: file as File,
             organizationId,
+            owner,
             requestId,
             scope: scope as never,
             userId: user.id

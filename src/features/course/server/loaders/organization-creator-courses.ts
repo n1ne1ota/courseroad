@@ -2,7 +2,7 @@ import 'server-only';
 
 import { createOrgRoutes } from '@/lib/routes/org';
 
-import { getCoursesByUserId } from '@/features/course/server/repositories/queries/get-courses';
+import { getCoursesByUserId } from '@/features/course/server/db/queries/get-courses';
 import { getOrganizationContext } from '@/server/auth/organization-context';
 import { getAuthenticatedUser } from '@/server/auth/session';
 import { getTenantPrisma } from '@/server/db/get-tenant-prisma';

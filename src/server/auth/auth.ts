@@ -20,16 +20,21 @@ import {
     lastLoginMethod,
     magicLink,
     multiSession,
-    organization,
     twoFactor
 } from 'better-auth/plugins';
 
-import { orgAc, orgCreator, orgInstructor, orgLearner, orgManager, orgOwner } from '@/lib/auth/org-permissions';
 import { ac, admin, creator, learner, staff } from '@/lib/auth/permissions';
 
+import { createOrganizationPlugin, organizationRolePolicy } from '@/server/auth/organization-role-policy';
+import { resolvePlatformRole } from '@/server/auth/platform-role';
 import { env } from '@/server/config/env';
 import { prismaClient } from '@/server/db/client';
-import { sendMagicLinkEmail, sendOtpVerificationEmail, sendPasswordResetEmail } from '@/server/email/email-service';
+import {
+    sendMagicLinkEmail,
+    sendOrganizationInvitationEmail,
+    sendOtpVerificationEmail,
+    sendPasswordResetEmail
+} from '@/server/email/email-service';
 import { logs } from '@/server/logging/server';
 
 // WebAuthn relying-party config derived from the app origin. `rpID` must be the
@@ -72,20 +77,14 @@ export const auth = betterAuth({
         session: {
             create: {
                 before: async session => {
-                    // Reconcile role from env-based email lists on every session creation.
-                    // This ensures role changes take effect on next login without manual DB updates.
+                    // Apply environment assignments without resetting a chosen persona.
                     const user = await prismaClient.user.findUnique({
                         select: { email: true, role: true },
                         where: { id: session.userId }
                     });
 
                     if (user?.email) {
-                        const email = user.email.toLowerCase();
-                        let expectedRole = 'learner';
-
-                        if (env.ADMIN_EMAILS.includes(email)) expectedRole = 'admin';
-                        else if (env.STAFF_EMAILS.includes(email)) expectedRole = 'staff';
-                        else if (env.CREATOR_EMAILS.includes(email)) expectedRole = 'creator';
+                        const expectedRole = resolvePlatformRole(user, env);
 
                         if (user.role !== expectedRole) {
                             await prismaClient.user.update({
@@ -234,23 +233,7 @@ export const auth = betterAuth({
                 learner
             }
         }),
-        organization({
-            ac: orgAc,
-            allowUserToCreateOrganization: true,
-            requireEmailVerificationOnInvitation: true,
-            roles: {
-                creator: orgCreator,
-                instructor: orgInstructor,
-                learner: orgLearner,
-                manager: orgManager,
-                owner: orgOwner
-            },
-            schema: {
-                member: {
-                    modelName: 'Member'
-                }
-            }
-        }),
+        createOrganizationPlugin(sendOrganizationInvitationEmail),
         emailOTP({
             allowedAttempts: 3,
             expiresIn: 300, // 5 minutes
@@ -366,6 +349,7 @@ export const auth = betterAuth({
         }),
         multiSession(),
         bearer(),
+        organizationRolePolicy,
         jwt(),
         nextCookies()
     ],

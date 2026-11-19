@@ -37,6 +37,13 @@ export const parseJsonArray = <T>(value: unknown, fallback: T): T => {
 export const env = createEnv({
     client: {
         NEXT_PUBLIC_APP_URL: z.preprocess(emptyStringAsUndefined, z.url().default('http://localhost:3000')),
+        NEXT_PUBLIC_PAYMENTS_ENABLED: z.preprocess(
+            emptyStringAsUndefined,
+            z
+                .enum(['true', 'false'])
+                .default('true')
+                .transform(value => value === 'true')
+        ),
         NEXT_PUBLIC_BUNNY_CDN_HOSTNAME: z.preprocess(emptyStringAsUndefined, z.string().trim().min(1).optional()),
         NEXT_PUBLIC_BUNNY_STORAGE_CDN: z.preprocess(emptyStringAsUndefined, z.string().trim().min(1).optional()),
         NEXT_PUBLIC_BUNNY_STREAM_LIBRARY_ID: z.preprocess(emptyStringAsUndefined, z.string().trim().min(1).optional()),
@@ -44,6 +51,7 @@ export const env = createEnv({
     },
     runtimeEnv: {
         NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL?.trim() || 'http://localhost:3000',
+        NEXT_PUBLIC_PAYMENTS_ENABLED: process.env.NEXT_PUBLIC_PAYMENTS_ENABLED?.trim() || undefined,
         NEXT_PUBLIC_BUNNY_CDN_HOSTNAME: process.env.NEXT_PUBLIC_BUNNY_CDN_HOSTNAME?.trim() || undefined,
         NEXT_PUBLIC_BUNNY_STORAGE_CDN: process.env.NEXT_PUBLIC_BUNNY_STORAGE_CDN?.trim() || undefined,
         NEXT_PUBLIC_BUNNY_STREAM_LIBRARY_ID: process.env.NEXT_PUBLIC_BUNNY_STREAM_LIBRARY_ID?.trim() || undefined,

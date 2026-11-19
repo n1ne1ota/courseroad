@@ -7,22 +7,22 @@ import crypto from 'crypto';
 
 import { z } from 'zod';
 
-import { streamWebhookSchema } from '@/features/media/schemas';
+import { fromWebhookStatus } from '@/features/media/lib/video-status';
+import { streamWebhookSchema } from '@/features/media/schemas/stream-schemas';
 import { env } from '@/server/config/env';
 import { prismaClient } from '@/server/db/client';
 import { logs } from '@/server/logging/server';
 
-const getDatabaseStatus = (bunnyStatus: number) => {
-    switch (bunnyStatus) {
-        case 3:
-            return 'Ready';
-        case 5:
-        case 8:
-            return 'Failed';
-        default:
-            return 'Processing';
-    }
-};
+/** Platform courses live under /creator; organization courses under /organization/<slug>/<role>. */
+const ORGANIZATION_ROLES = ['creator', 'manager', 'owner'] as const;
+
+function coursePaths(organizationSlug: string | null, courseId: string): string[] {
+    if (organizationSlug === null) return [`/creator/dashboard/courses/${courseId}`, '/creator/dashboard/courses'];
+    return ORGANIZATION_ROLES.flatMap(role => [
+        `/organization/${organizationSlug}/${role}/dashboard/courses/${courseId}`,
+        `/organization/${organizationSlug}/${role}/dashboard/courses`
+    ]);
+}
 
 // TODO: Add own auth validation (such as secret header) in Bunny dashboard webhook settings
 export async function POST(req: Request) {
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
         }
 
         const payload = parseResult.data;
-        const databaseStatus = getDatabaseStatus(payload.Status);
+        const databaseStatus = fromWebhookStatus(payload.Status);
 
         logs.api.info('Video processing webhook received', {
             mappedStatus: databaseStatus,
@@ -91,20 +91,29 @@ export async function POST(req: Request) {
             })
         ]);
 
-        // Revalidate Next.js cache so creators instantly see the new Ready status
+        // Revalidate the course pages so creators see the new status. Tenants are addressed by slug, not id.
+        const affected = [
+            ...courses.map(course => ({ courseId: course.id, organizationId: course.organizationId })),
+            ...lessons.map(lesson => ({ courseId: lesson.module.courseId, organizationId: lesson.organizationId }))
+        ];
+        const organizationIds = [...new Set(affected.flatMap(({ organizationId }) => organizationId ?? []))];
+        const organizations = organizationIds.length
+            ? await prismaClient.organization.findMany({
+                  select: { id: true, slug: true },
+                  where: { id: { in: organizationIds } }
+              })
+            : [];
+        const slugById = new Map(organizations.map(organization => [organization.id, organization.slug]));
+
         const pathsToRevalidate = new Set<string>();
-
-        courses.forEach(course => {
-            pathsToRevalidate.add(`/organization/${course.organizationId}/courses/${course.id}`);
-            pathsToRevalidate.add(`/organization/${course.organizationId}/courses`);
-        });
-
-        lessons.forEach(lesson => {
-            pathsToRevalidate.add(`/organization/${lesson.organizationId}/courses/${lesson.module.courseId}`);
-            pathsToRevalidate.add(
-                `/organization/${lesson.organizationId}/courses/${lesson.module.courseId}/lessons/${lesson.id}`
-            );
-        });
+        for (const { courseId, organizationId } of affected) {
+            if (organizationId === null) {
+                coursePaths(null, courseId).forEach(path => pathsToRevalidate.add(path));
+                continue;
+            }
+            const slug = slugById.get(organizationId);
+            if (slug) coursePaths(slug, courseId).forEach(path => pathsToRevalidate.add(path));
+        }
 
         pathsToRevalidate.forEach(path => revalidatePath(path));
 

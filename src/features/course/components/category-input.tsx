@@ -10,7 +10,18 @@ interface CategoryInputProps {
 
 export function CategoryInput({ id, onChange, value }: CategoryInputProps) {
   return (
-    <Select value={value || ''} {...(onChange ? { onValueChange: onChange } : {})}>
+    <Select
+      items={{
+        'health-fitness': 'Health & Fitness',
+        business: 'Business',
+        design: 'Design',
+        development: 'Development'
+      }}
+      value={value || null}
+      onValueChange={next => {
+        if (next !== null) onChange?.(next);
+      }}
+    >
       <SelectTrigger className='w-full' id={id}>
         <SelectValue placeholder='Select' />
       </SelectTrigger>

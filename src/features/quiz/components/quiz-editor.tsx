@@ -8,8 +8,8 @@ import { useRouter } from 'next/navigation';
 import type { FieldValues } from 'react-hook-form';
 import type { z } from 'zod';
 
-import { showErrorToast, showSuccessToast } from '@courseroad/iota-ui';
-import { Button, StatusBadge, Tabs } from '@courseroad/kurume-ui';
+import { Button, showErrorToast, showSuccessToast, StatusBadge, Tabs } from '@courseroad/kurume-ui';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SaveIcon } from 'lucide-react';
 import { FormProvider, useForm } from 'react-hook-form';
@@ -17,9 +17,9 @@ import { FormProvider, useForm } from 'react-hook-form';
 import { UnsavedChangesAlert } from '@/components/shared/unsaved-changes-alert';
 
 import { updateQuiz } from '@/features/quiz/actions/quiz-actions';
-import { updateQuizSchema } from '@/features/quiz/schemas';
+import { updateQuizSchema } from '@/features/quiz/schemas/schemas';
 
-import type { Quiz, QuizOption, QuizQuestion } from '@/features/quiz/editor-types';
+import type { Quiz, QuizOption, QuizQuestion } from '@/features/quiz/types/editor-types';
 
 import { QuizDetails } from './quiz-details';
 import { QuizPublishPage } from './quiz-publish-page';

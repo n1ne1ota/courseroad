@@ -9,7 +9,7 @@ import { BookOpen, CheckCircle2, ChevronLeft, LayoutDashboard, PlayCircle } from
 import { loadLearnLayout } from '@/features/course/server/loaders/organization-learner-learn-layout';
 import { readForPage } from '@/server/auth/page-access';
 
-import type { Lesson, Module } from '@/features/course/types';
+import type { Lesson, Module } from '@/features/course/types/course-types';
 
 type LearnLayoutProps = {
   children: ReactNode;

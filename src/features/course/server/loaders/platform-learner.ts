@@ -1,41 +1,26 @@
 import 'server-only';
 
+import { cache } from 'react';
+
 import type { Route } from 'next';
 
-import { getPublishedCourses } from '@/features/course/server/repositories/queries/get-courses';
+import { getPublishedCourses } from '@/features/course/server/db/queries/get-courses';
 import {
     getLearnerEnrollmentsWithProgressDetails,
     getUserLessonProgress
-} from '@/features/course/server/repositories/queries/get-enrollments';
+} from '@/features/course/server/db/queries/get-enrollments';
 import { destination } from '@/server/auth/read-errors';
 import { getAuthenticatedUser } from '@/server/auth/session';
 import { prismaClient } from '@/server/db/client';
 
-/** Authorized course projection for LearnerDashboardContent. */
-export async function loadLearnerDashboardContent() {
-    const sessionUser = await getAuthenticatedUser();
-    const user = await prismaClient.user.findUnique({
-        select: {
-            id: true,
-            name: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-            image: true,
-            username: true,
-            role: true
-        },
-        where: { id: sessionUser.id }
-    });
-    if (!user) destination('/sign-in' as Route);
-    const [enrollments, lessonProgress, publishedCourses, memberships] = await Promise.all([
-        getLearnerEnrollmentsWithProgressDetails(prismaClient, sessionUser.id),
-        getUserLessonProgress(prismaClient, sessionUser.id),
-        getPublishedCourses(prismaClient),
-        prismaClient.member.findMany({
-            select: { role: true, organization: { select: { id: true, name: true, slug: true } } },
-            where: { userId: sessionUser.id }
-        })
+/**
+ * Enrollment progress shared by the hero, My Learning, and recommendations.
+ * `cache` dedupes it per request so sibling Suspense sections don't repeat the queries.
+ */
+const loadEnrollmentProgress = cache(async (userId: string) => {
+    const [enrollments, lessonProgress] = await Promise.all([
+        getLearnerEnrollmentsWithProgressDetails(prismaClient, userId),
+        getUserLessonProgress(prismaClient, userId)
     ]);
     let inProgressCount = 0;
     const coursesWithProgress = enrollments.map(enrollment => {
@@ -67,8 +52,46 @@ export async function loadLearnerDashboardContent() {
             status
         };
     });
-    const catalogRecommendations = publishedCourses
-        .filter(c => !enrollments.some(e => e.courseId === c.id))
+    const enrolledCourseIds = new Set(enrollments.map(e => e.courseId));
+    return { coursesWithProgress, enrolledCourseIds, inProgressCount };
+});
+
+/** Greeting data for the learner dashboard hero. */
+export async function loadLearnerHero() {
+    const sessionUser = await getAuthenticatedUser();
+    const [user, { inProgressCount }] = await Promise.all([
+        prismaClient.user.findUnique({ select: { firstName: true }, where: { id: sessionUser.id } }),
+        loadEnrollmentProgress(sessionUser.id)
+    ]);
+    if (!user) destination('/sign-in' as Route);
+    return { firstName: user.firstName, inProgressCount };
+}
+
+/** Organization memberships for the My Workspaces section. */
+export async function loadLearnerWorkspaces() {
+    const sessionUser = await getAuthenticatedUser();
+    return prismaClient.member.findMany({
+        select: { role: true, organization: { select: { id: true, name: true, slug: true } } },
+        where: { userId: sessionUser.id }
+    });
+}
+
+/** Enrolled courses with progress for the My Learning section. */
+export async function loadLearnerCourses() {
+    const sessionUser = await getAuthenticatedUser();
+    const { coursesWithProgress } = await loadEnrollmentProgress(sessionUser.id);
+    return coursesWithProgress;
+}
+
+/** Published courses the learner isn't enrolled in, for the Trending Courses section. */
+export async function loadLearnerRecommendations() {
+    const sessionUser = await getAuthenticatedUser();
+    const [{ enrolledCourseIds }, publishedCourses] = await Promise.all([
+        loadEnrollmentProgress(sessionUser.id),
+        getPublishedCourses(prismaClient)
+    ]);
+    return publishedCourses
+        .filter(c => !enrolledCourseIds.has(c.id))
         .map(c => ({
             category: c.category,
             id: c.id,
@@ -78,5 +101,4 @@ export async function loadLearnerDashboardContent() {
             thumbnailFileName: c.thumbnailFileName,
             title: c.title
         }));
-    return { user, memberships, inProgressCount, coursesWithProgress, catalogRecommendations };
 }

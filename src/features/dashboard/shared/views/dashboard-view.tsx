@@ -12,7 +12,7 @@ import { loadLearnerDashboardView } from '@/features/course/server/loaders/organ
 import { CreatorDashboardCards } from '@/features/dashboard/organization/creator/analytics-cards';
 import { CreatorDashboardChart } from '@/features/dashboard/organization/creator/analytics-chart';
 import { CreatorDashboardTable } from '@/features/dashboard/organization/creator/analytics-table';
-import { dashboardMockData } from '@/features/dashboard/shared/data/dashboard-data';
+import { dashboardMockData } from '@/features/dashboard/shared/mock/dashboard-data';
 import { LearnerDashboardStats } from '@/features/dashboard/shared/ui/learner-dashboard-stats';
 import { readForPage } from '@/server/auth/page-access';
 
@@ -24,9 +24,7 @@ export async function CreatorDashboardView(): Promise<JSX.Element> {
   return (
     <>
       <CreatorDashboardCards />
-      <div className='px-4 lg:px-6'>
-        <CreatorDashboardChart />
-      </div>
+      <CreatorDashboardChart />
       <CreatorDashboardTable data={dashboardMockData} />
     </>
   );
@@ -52,21 +50,21 @@ export async function LearnerDashboardView({ orgSlug }: LearnerDashboardViewProp
   } = await readForPage(() => loadLearnerDashboardView({ orgSlug }));
 
   return (
-    <div className='relative flex flex-col gap-8 px-4 pt-6 pb-12 lg:px-6'>
-      <div className='pointer-events-none absolute top-0 -left-20 size-[500px] rounded-full bg-primary/5 blur-[120px]' />
+    <div className='relative flex flex-col gap-6'>
+      <div className='pointer-events-none absolute top-0 -left-20 size-[500px] rounded-full bg-brand/5 blur-[120px]' />
 
       {/* Hero Header */}
       <div className='border-default-200/50 relative flex flex-col justify-between gap-6 overflow-hidden rounded-3xl border bg-background/40 p-8 shadow-sm backdrop-blur-md md:flex-row md:items-center'>
         <div className='pointer-events-none absolute -top-20 -right-20 size-[300px] rounded-full bg-secondary/10 blur-[80px]' />
 
         <div className='slide-in-bottom-1 z-10'>
-          <div className='mb-4 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 backdrop-blur-md'>
-            <Sparkles className='size-4 text-primary' />
-            <span className='text-xs font-semibold tracking-wider text-primary uppercase'>Learner Portal</span>
+          <div className='mb-4 inline-flex items-center gap-2 rounded-full border border-brand/20 bg-brand/10 px-3 py-1 backdrop-blur-md'>
+            <Sparkles className='size-4 text-brand' />
+            <span className='text-xs font-semibold tracking-wider text-brand uppercase'>Learner Portal</span>
           </div>
           <h2 className='text-3xl font-extrabold tracking-tight text-foreground md:text-4xl'>
             Welcome back,{' '}
-            <span className='bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent'>
+            <span className='bg-gradient-to-r from-brand to-secondary bg-clip-text text-transparent'>
               {user.firstName}
             </span>
             !
@@ -81,7 +79,7 @@ export async function LearnerDashboardView({ orgSlug }: LearnerDashboardViewProp
         {resumeCourse && resumeCourse.status !== 'COMPLETED' && (
           <div className='z-10 shrink-0'>
             <Link
-              className='group flex items-center justify-between gap-4 rounded-2xl bg-foreground px-6 py-4 text-background shadow-xl transition-all hover:scale-105 hover:shadow-primary/20 active:scale-95'
+              className='group flex items-center justify-between gap-4 rounded-2xl bg-foreground px-6 py-4 text-background shadow-xl transition-all hover:scale-105 hover:shadow-brand/20 active:scale-95'
               href={orgRoutes.learn(resumeCourse.enrollment.courseId)}
             >
               <div className='flex flex-col'>
@@ -106,7 +104,7 @@ export async function LearnerDashboardView({ orgSlug }: LearnerDashboardViewProp
       />
 
       {/* Course Grid */}
-      <div className='mt-4 flex flex-col gap-6 delay-200 duration-700 fade-in'>
+      <div className='flex flex-col gap-6 delay-200 duration-700 fade-in'>
         <div className='flex items-center justify-between'>
           <h3 className='text-xl font-bold tracking-tight'>My Learning</h3>
         </div>
@@ -136,7 +134,7 @@ export async function LearnerDashboardView({ orgSlug }: LearnerDashboardViewProp
               You haven&apos;t enrolled in any courses. Browse the catalog to start your learning journey!
             </p>
             <Link
-              className='mt-6 rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-transform hover:scale-105 active:scale-95'
+              className='mt-6 rounded-full bg-brand px-6 py-2.5 text-sm font-semibold text-brand-foreground transition-transform hover:scale-105 active:scale-95'
               href={'/courses' as Route}
             >
               Browse Catalog

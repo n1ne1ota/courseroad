@@ -4,14 +4,15 @@ import type { JSX } from 'react';
 
 import Link from 'next/link';
 
+import { Alert, AlertDescription } from '@courseroad/kurume-ui';
+
 import { authClient, signInAnonymously } from '@/lib/auth/auth-client';
 import { routes } from '@/lib/routes';
 
 import { submitPublicQuizAnswers } from '@/features/quiz/actions/quiz-submission-actions';
 import { QuizPlayer } from '@/features/quiz/components/quiz-player';
-import { Alert, AlertDescription } from '@courseroad/kurume-ui';
 
-import type { QuizPlayerProps } from '@/features/quiz/quiz-player-types';
+import type { QuizPlayerProps } from '@/features/quiz/types/quiz-player-types';
 
 type PublicQuizExperienceProps = Pick<
   QuizPlayerProps,

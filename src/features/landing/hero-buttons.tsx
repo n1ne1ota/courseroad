@@ -4,10 +4,10 @@ import { useSyncExternalStore } from 'react';
 
 import Link from 'next/link';
 
+import { Button } from '@courseroad/iota-ui';
+
 import { useSession } from '@/lib/auth/auth-client';
 import { getDashboardPath, type UserRole } from '@/lib/utils/auth-navigation';
-
-import { Button } from '@courseroad/iota-ui';
 
 import { HeroButton } from './hero-button';
 
@@ -31,10 +31,10 @@ export function HeroButtons() {
   if (!mounted || isPending) {
     return (
       <div className='mt-2 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row'>
-        <Button className='w-full sm:w-auto' disabled color='secondary' radius='full' size='lg' variant='solid'>
+        <Button className='w-full sm:w-auto' disabled radius='full' size='lg' variant='secondary'>
           Sign In
         </Button>
-        <Button className='w-full sm:w-auto' disabled color='primary' radius='full' size='lg'>
+        <Button className='w-full sm:w-auto' disabled color='brand' radius='full' size='lg'>
           Sign Up
         </Button>
       </div>
@@ -62,11 +62,10 @@ export function HeroButtons() {
     <div className='mt-2 flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row'>
       <Button
         className='w-full font-medium sm:w-auto'
-        color='secondary'
         radius='full'
         render={<Link href='/sign-in' />}
         size='lg'
-        variant='solid'
+        variant='secondary'
       >
         Sign In
       </Button>

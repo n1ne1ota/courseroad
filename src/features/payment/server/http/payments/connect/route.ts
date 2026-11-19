@@ -5,12 +5,16 @@ import { NextResponse } from 'next/server';
 
 import { z } from 'zod';
 
-import { createExpressAccount, createOnboardingLink } from '@/features/payment/server/repositories/integration';
+import { createExpressAccount, createOnboardingLink } from '@/features/payment/server/stripe-connect';
 import { auth } from '@/server/auth/auth';
+import { env } from '@/server/config/env';
 import { prismaClient as prisma } from '@/server/db/client';
 import { logs } from '@/server/logging/server';
 
 export async function POST(req: Request) {
+    if (env.NEXT_PUBLIC_PAYMENTS_ENABLED === false) {
+        return new NextResponse('Payments are not enabled in this environment.', { status: 503 });
+    }
     const session = await auth.api.getSession({
         headers: await headers()
     });

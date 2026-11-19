@@ -4,12 +4,13 @@ import type { ChangeEvent, JSX, SVGProps, SyntheticEvent } from 'react';
 import { useRef, useState, useTransition } from 'react';
 
 import { Avatar, Button, ImageCropperDialog, Input } from '@courseroad/iota-ui';
+
 import { Alert, AlertDescription, Textarea } from '@kurume-ui/core';
 import {
-  PenLinear as PenIcon,
-  TrashBinMinimalisticLinear as TrashIcon,
-  UploadLinear as UploadIcon
-} from '@solar-icons/react-perf';
+  PenLinearIcon as PenIcon,
+  TrashBinMinimalisticLinearIcon as TrashIcon,
+  UploadLinearIcon as UploadIcon
+} from '@solar-icons/react';
 import { Globe, Loader2, Save, User } from 'lucide-react';
 
 import { updateInstructorProfile } from '@/features/auth/actions/profile-actions';
@@ -150,7 +151,7 @@ export function CreatorProfileEditor({ initialProfile }: CreatorProfileEditorPro
             <div className='border-default-200/50 flex w-full flex-col items-center gap-6 rounded-3xl border bg-background/40 p-8 shadow-sm backdrop-blur-md'>
               <div className='relative size-32'>
                 <button
-                  className='group relative size-full shrink-0 cursor-pointer overflow-hidden rounded-full border-2 border-primary/20 bg-transparent p-0 outline-none'
+                  className='group relative size-full shrink-0 cursor-pointer overflow-hidden rounded-full border-2 border-brand/20 bg-transparent p-0 outline-none'
                   type='button'
                   onClick={() => {
                     if (image) {
@@ -166,15 +167,15 @@ export function CreatorProfileEditor({ initialProfile }: CreatorProfileEditorPro
                     name={firstName || lastName ? `${firstName} ${lastName}`.trim() : undefined}
                     classNames={{
                       img: 'h-full w-full object-cover',
-                      icon: 'size-12 text-zinc-600'
+                      icon: 'size-12 text-muted-foreground'
                     }}
-                    icon={<User className='size-12 text-zinc-600' />}
+                    icon={<User className='size-12 text-muted-foreground' />}
                     size={128}
                     src={image || undefined}
                   />
                   {image ? (
-                    <div className='absolute inset-0 flex items-center justify-center bg-red-500/30 opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100'>
-                      <TrashIcon className='size-10 text-red-200' />
+                    <div className='absolute inset-0 flex items-center justify-center bg-destructive/30 opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100'>
+                      <TrashIcon className='size-10 text-destructive-foreground' />
                     </div>
                   ) : (
                     <div className='absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 backdrop-blur-sm transition-opacity duration-200 group-hover:opacity-100'>
@@ -185,7 +186,7 @@ export function CreatorProfileEditor({ initialProfile }: CreatorProfileEditorPro
 
                 {image && (
                   <button
-                    className='absolute -top-1 -right-1 z-10 flex size-8 cursor-pointer items-center justify-center rounded-full border border-zinc-800 bg-zinc-900 text-zinc-200 shadow-lg transition-transform hover:scale-105 hover:bg-zinc-800 focus:outline-none'
+                    className='absolute -top-1 -right-1 z-10 flex size-8 cursor-pointer items-center justify-center rounded-full border border-border bg-card text-foreground shadow-lg transition-transform hover:scale-105 hover:bg-muted focus:outline-none'
                     type='button'
                     title='Adjust Crop'
                     onClick={e => {
@@ -228,7 +229,7 @@ export function CreatorProfileEditor({ initialProfile }: CreatorProfileEditorPro
                   {firstName} {lastName}
                 </h3>
                 <p className='text-sm text-muted-foreground'>@{username || 'instructor'}</p>
-                <span className='mt-2 inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary uppercase'>
+                <span className='mt-2 inline-flex items-center rounded-full bg-brand/10 px-2.5 py-0.5 text-xs font-medium text-brand uppercase'>
                   B2C Creator
                 </span>
               </div>
@@ -275,7 +276,7 @@ export function CreatorProfileEditor({ initialProfile }: CreatorProfileEditorPro
               <div className='flex flex-col gap-1.5'>
                 <label className='text-sm font-semibold text-foreground'>Biography</label>
                 <Textarea
-                  className='border-default-200/50 min-h-[120px] rounded-2xl bg-background/50 text-sm focus:border-primary/50'
+                  className='border-default-200/50 min-h-[120px] rounded-2xl bg-background/50 text-sm focus:border-brand/50'
                   placeholder='Share a brief bio about your expertise, experience, and background for your public profile page...'
                   value={bio}
                   onChange={e => setBio(e.target.value)}
@@ -333,7 +334,6 @@ export function CreatorProfileEditor({ initialProfile }: CreatorProfileEditorPro
               <Button
                 className='flex items-center gap-2 rounded-2xl px-6 py-3 font-semibold'
                 type='submit'
-                color='primary'
                 disabled={isPending}
               >
                 {isPending ? <Loader2 className='size-4 animate-spin' /> : <Save className='size-4' />}

@@ -9,19 +9,19 @@ import { ToggleGroup, ToggleGroupItem } from '@kurume-ui/core';
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@kurume-ui/core';
 import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 
-import { type StaffMetric, staffMetricsData } from '@/features/dashboard/shared/data/chart-data';
+import { type StaffMetric, staffMetricsData } from '@/features/dashboard/shared/mock/chart-data';
 
 const chartConfig = {
   approved: {
-    color: 'hsl(var(--chart-2))',
+    color: 'var(--kurume-chart-2)',
     label: 'Approved'
   },
   pending: {
-    color: 'hsl(var(--chart-3))',
+    color: 'var(--kurume-chart-3)',
     label: 'Pending'
   },
   rejected: {
-    color: 'hsl(var(--chart-5))',
+    color: 'var(--kurume-chart-5)',
     label: 'Rejected'
   }
 } satisfies ChartConfig;
@@ -54,7 +54,19 @@ export function StaffDashboardChart() {
           </CardDescription>
         </div>
         <CardAction>
-          <ToggleGroup className='flex' type='single' value={timeRange} variant='outline' onValueChange={setTimeRange}>
+          <ToggleGroup
+            className='flex'
+            value={[timeRange]}
+            variant='outline'
+            onValueChange={(values, details) => {
+              const next = values[0];
+              if (next === undefined) {
+                details.cancel();
+                return;
+              }
+              setTimeRange(next);
+            }}
+          >
             <ToggleGroupItem className='h-9 px-4 sm:px-6' value='90d'>
               Last 3 months
             </ToggleGroupItem>

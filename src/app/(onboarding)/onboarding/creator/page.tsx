@@ -1,14 +1,24 @@
 import 'server-only';
 
 import type { JSX } from 'react';
+import { Suspense } from 'react';
 
 import type { Metadata } from 'next';
 
-import { CreatorOnboardingFlow } from '@/features/onboarding/creator-onboarding';
+import { CreatorOnboardingFlow } from '@/features/onboarding/components/creator-onboarding';
+import { OnboardingFlowSkeleton } from '@/features/onboarding/components/onboarding-flow-skeleton';
 import { getOnboardingEntry } from '@/features/onboarding/server/entry';
 import { readForPage } from '@/server/auth/page-access';
 
-export default async function CreatorOnboardingPage(): Promise<JSX.Element> {
+export default function CreatorOnboardingPage() {
+  return (
+    <Suspense fallback={<OnboardingFlowSkeleton />}>
+      <CreatorOnboardingContent />
+    </Suspense>
+  );
+}
+
+async function CreatorOnboardingContent(): Promise<JSX.Element> {
   const user = await readForPage(() => getOnboardingEntry());
 
   return (

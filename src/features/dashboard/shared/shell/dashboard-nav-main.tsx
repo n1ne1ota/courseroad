@@ -19,11 +19,9 @@ export function DashboardNavMain({ items }: { items: NavItems[] }) {
         <SidebarMenu>
           {items.map(item => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild tooltip={item.title}>
-                <Link href={item.url}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                </Link>
+              <SidebarMenuButton render={<Link href={item.url} />} tooltip={item.title}>
+                {item.icon && <item.icon />}
+                <span>{item.title}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

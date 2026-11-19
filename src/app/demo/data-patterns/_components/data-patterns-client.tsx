@@ -49,7 +49,7 @@ export function DataPatternsClient() {
   return (
     <div className='grid gap-8 md:grid-cols-2'>
       {/* TanStack Query Section */}
-      <section className='space-y-4 rounded-xl border border-neutral-200 bg-card p-6 dark:border-neutral-800'>
+      <section className='space-y-4 rounded-xl border border-border bg-card p-6'>
         <div>
           <h2 className='text-xl font-bold tracking-tight'>1. TanStack Query Hydration</h2>
           <p className='mt-1 text-sm text-muted-foreground'>
@@ -59,18 +59,18 @@ export function DataPatternsClient() {
 
         {isLoading ? (
           <div className='animate-pulse space-y-2 py-4'>
-            <div className='h-4 w-3/4 rounded bg-neutral-200 dark:bg-neutral-800' />
-            <div className='h-4 w-1/2 rounded bg-neutral-200 dark:bg-neutral-800' />
+            <div className='h-4 w-3/4 rounded bg-muted' />
+            <div className='h-4 w-1/2 rounded bg-muted' />
           </div>
         ) : (
           <div className='space-y-3'>
             {courses?.map(course => (
               <div
                 key={course.id}
-                className='flex items-center justify-between rounded-lg border border-neutral-200 bg-background/50 p-3 transition-colors hover:border-primary/50 dark:border-neutral-800/50'
+                className='flex items-center justify-between rounded-lg border border-border bg-background/50 p-3 transition-colors hover:border-brand/50'
               >
-                <span className='text-sm font-medium text-neutral-800 dark:text-neutral-200'>{course.title}</span>
-                <span className='rounded bg-neutral-100 px-2 py-1 font-mono text-xs text-muted-foreground dark:bg-neutral-800'>
+                <span className='text-sm font-medium text-foreground'>{course.title}</span>
+                <span className='rounded bg-muted px-2 py-1 font-mono text-xs text-muted-foreground'>
                   {course.duration}
                 </span>
               </div>
@@ -80,7 +80,7 @@ export function DataPatternsClient() {
       </section>
 
       {/* Zustand Section */}
-      <section className='space-y-4 rounded-xl border border-neutral-200 bg-card p-6 dark:border-neutral-800'>
+      <section className='space-y-4 rounded-xl border border-border bg-card p-6'>
         <div>
           <h2 className='text-xl font-bold tracking-tight'>2. Request-Scoped Zustand Store</h2>
           <p className='mt-1 text-sm text-muted-foreground'>
@@ -90,13 +90,13 @@ export function DataPatternsClient() {
 
         <div className='flex gap-2'>
           <button
-            className='cursor-pointer rounded-md bg-neutral-900 px-3 py-1.5 text-xs font-medium text-neutral-50 transition-opacity hover:opacity-90 dark:bg-neutral-50 dark:text-neutral-900'
+            className='cursor-pointer rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90'
             onClick={() => expandAll(allModuleIds)}
           >
             Expand All
           </button>
           <button
-            className='cursor-pointer rounded-md bg-neutral-100 px-3 py-1.5 text-xs font-medium text-neutral-600 transition-colors hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-400 dark:hover:bg-neutral-700/80'
+            className='cursor-pointer rounded-md bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/70'
             onClick={collapseAll}
           >
             Collapse All
@@ -107,25 +107,22 @@ export function DataPatternsClient() {
           {mockModules.map(mod => {
             const isExpanded = expandedModuleIds.includes(mod.id);
             return (
-              <div
-                key={mod.id}
-                className='overflow-hidden rounded-lg border border-neutral-200 bg-background/50 dark:border-neutral-800/50'
-              >
+              <div key={mod.id} className='overflow-hidden rounded-lg border border-border bg-background/50'>
                 <button
-                  className='flex w-full cursor-pointer items-center justify-between p-4 text-left transition-colors hover:bg-neutral-100/50 dark:hover:bg-neutral-800/30'
+                  className='flex w-full cursor-pointer items-center justify-between p-4 text-left transition-colors hover:bg-muted/50'
                   onClick={() => toggleModule(mod.id)}
                 >
-                  <span className='text-sm font-semibold text-neutral-800 dark:text-neutral-200'>{mod.title}</span>
-                  <span className='text-xs font-semibold text-neutral-500 dark:text-neutral-400'>
+                  <span className='text-sm font-semibold text-foreground'>{mod.title}</span>
+                  <span className='text-xs font-semibold text-muted-foreground'>
                     {isExpanded ? 'Collapse' : 'Expand'}
                   </span>
                 </button>
 
                 {isExpanded && (
-                  <div className='space-y-2 border-t border-neutral-100 bg-neutral-50/50 px-4 pt-2 pb-4 dark:border-neutral-800/30 dark:bg-neutral-900/10'>
+                  <div className='space-y-2 border-t border-border bg-card/50 px-4 pt-2 pb-4'>
                     {mod.lessons.map((lesson, idx) => (
                       <div key={idx} className='flex items-center gap-2 text-xs text-muted-foreground'>
-                        <span className='h-1.5 w-1.5 rounded-full bg-neutral-400 dark:bg-neutral-600' />
+                        <span className='h-1.5 w-1.5 rounded-full bg-muted-foreground/40' />
                         {lesson}
                       </div>
                     ))}

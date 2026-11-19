@@ -14,18 +14,19 @@ import {
   Field,
   FieldError,
   FieldGroup,
-  HelpTooltip,
+  HelpPopover,
   Label,
   NumberInput,
   Switch
 } from '@courseroad/kurume-ui';
+
 import { FileText, ImageIcon, Settings, SettingsIcon } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Controller, useFormContext, useWatch } from 'react-hook-form';
 
 import { TitleInput } from '@/components/shared/title-input';
 
-import { ImageUpload } from '@/features/media/image-upload';
+import { ImageUpload } from '@/features/media/components/image-upload';
 
 import { QuizMarkdownEditor } from './quiz-markdown-editor';
 
@@ -57,7 +58,7 @@ export function QuizDetails({ onSubmit }: QuizDetailsProps): JSX.Element {
                   name='title'
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <HelpTooltip id='quiz-title' help='Add a title for your quiz' label='Title' />
+                      <HelpPopover id='quiz-title' help='Add a title for your quiz' label='Title' />
                       <TitleInput id='quiz-title' value={field.value} onChange={field.onChange} />
                       {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
                     </Field>
@@ -69,7 +70,7 @@ export function QuizDetails({ onSubmit }: QuizDetailsProps): JSX.Element {
                   name='description'
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <HelpTooltip id='quiz-description' help='Describe the quiz objectives...' label='Description' />
+                      <HelpPopover id='quiz-description' help='Describe the quiz objectives...' label='Description' />
                       <QuizMarkdownEditor
                         placeholder='Describe the quiz objectives...'
                         value={field.value ?? ''}
@@ -214,7 +215,7 @@ export function QuizDetails({ onSubmit }: QuizDetailsProps): JSX.Element {
                   name='timeLimit'
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <HelpTooltip
+                      <HelpPopover
                         id='quiz-timeLimit'
                         help='Set a time limit for the quiz. Leave empty for no limit.'
                         label='Time Limit'
@@ -237,7 +238,7 @@ export function QuizDetails({ onSubmit }: QuizDetailsProps): JSX.Element {
                   name='allowedAttempts'
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <HelpTooltip
+                      <HelpPopover
                         id='quiz-allowedAttempts'
                         help='Maximum number of allowed attempts per learner. Leave empty for unlimited.'
                         label='Max Attempts'
@@ -263,7 +264,7 @@ export function QuizDetails({ onSubmit }: QuizDetailsProps): JSX.Element {
                   name='passingScore'
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <HelpTooltip
+                      <HelpPopover
                         id='quiz-passingScore'
                         help='Minimum percentage required to pass the quiz. Leave empty for no requirement.'
                         label='Passing Score'

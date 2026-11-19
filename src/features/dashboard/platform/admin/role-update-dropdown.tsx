@@ -1,9 +1,8 @@
-﻿'use client';
+'use client';
 
 import { useTransition } from 'react';
 
-import { showErrorToast, showSuccessToast } from '@courseroad/iota-ui';
-import { Button } from '@kurume-ui/core';
+import { Button, showErrorToast, showSuccessToast } from '@kurume-ui/core';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@kurume-ui/core';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@kurume-ui/core';
 import { Loader2, MoreVerticalIcon } from 'lucide-react';
@@ -25,10 +24,18 @@ export function RoleUpdateDropdown({ currentRole, userId }: RoleUpdateDropdownPr
   if (currentRole === 'admin') {
     return (
       <Tooltip>
-        <TooltipTrigger asChild>
-          <Button disabled size='icon' variant='ghost'>
-            <MoreVerticalIcon className='text-muted-foreground' size={16} />
-          </Button>
+        <TooltipTrigger
+          render={
+            <Button
+              disabled
+              focusableWhenDisabled
+              size='icon-md'
+              variant='ghost'
+              aria-label='Admin role cannot be modified'
+            />
+          }
+        >
+          <MoreVerticalIcon className='text-muted-foreground' size={16} />
         </TooltipTrigger>
         <TooltipContent>
           <p>Admin role cannot be modified</p>
@@ -59,16 +66,16 @@ export function RoleUpdateDropdown({ currentRole, userId }: RoleUpdateDropdownPr
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button disabled={isPending} size='icon' variant='ghost'>
-          {isPending ? (
-            <Loader2 className='animate-spin text-muted-foreground' size={16} />
-          ) : (
-            <MoreVerticalIcon className='text-muted-foreground' size={16} />
-          )}
-        </Button>
+      <DropdownMenuTrigger
+        render={<Button disabled={isPending} size='icon-md' variant='ghost' aria-label='Change user role' />}
+      >
+        {isPending ? (
+          <Loader2 className='animate-spin text-muted-foreground' size={16} />
+        ) : (
+          <MoreVerticalIcon className='text-muted-foreground' size={16} />
+        )}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end'>
+      <DropdownMenuContent positionerProps={{ align: 'end' }}>
         {ROLES.map(role => (
           <DropdownMenuItem
             key={role}

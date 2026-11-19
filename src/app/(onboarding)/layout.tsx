@@ -1,13 +1,19 @@
 import 'server-only';
 
 import type { ReactNode } from 'react';
+import { Suspense } from 'react';
 
 import { loadOnboardingLayout } from '@/features/auth/server/loaders/layout';
+import { OnboardingFlowSkeleton } from '@/features/onboarding/components/onboarding-flow-skeleton';
 import { readForPage } from '@/server/auth/page-access';
 
-export default async function OnboardingLayout({ children }: { children: ReactNode }) {
+async function OnboardingGuard({ children }: { children: ReactNode }) {
   await readForPage(loadOnboardingLayout);
 
+  return <>{children}</>;
+}
+
+export default function OnboardingLayout({ children }: { children: ReactNode }) {
   return (
     <div className='relative min-h-screen'>
       {/* Shared Background Grid */}
@@ -22,7 +28,11 @@ export default async function OnboardingLayout({ children }: { children: ReactNo
       </div>
 
       {/* Content wrapper */}
-      <div className='relative z-10 flex min-h-screen flex-col'>{children}</div>
+      <div className='relative z-10 flex min-h-screen flex-col'>
+        <Suspense fallback={<OnboardingFlowSkeleton />}>
+          <OnboardingGuard>{children}</OnboardingGuard>
+        </Suspense>
+      </div>
     </div>
   );
 }

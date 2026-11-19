@@ -15,6 +15,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -22,7 +23,7 @@ import {
 } from '@kurume-ui/core';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@kurume-ui/core';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@kurume-ui/core';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@kurume-ui/core';
+import { Popover, PopoverContent, PopoverTitle, PopoverTrigger } from '@kurume-ui/core';
 import { flexRender, useTable } from '@tanstack/react-table';
 import {
   ArrowDownIcon,
@@ -191,9 +192,9 @@ export function UserManagementTable({ sortField, sortOrder, totalCount, totalPag
       cell: ({ row }) => (
         <div className='flex items-center justify-center px-2'>
           <Checkbox
-            isSelected={row.getIsSelected()}
+            checked={row.getIsSelected()}
             aria-label='Select row'
-            onValueChange={value => row.toggleSelected(!!value)}
+            onCheckedChange={value => row.toggleSelected(value)}
           />
         </div>
       ),
@@ -202,10 +203,10 @@ export function UserManagementTable({ sortField, sortOrder, totalCount, totalPag
       header: ({ table }) => (
         <div className='flex items-center justify-center px-2'>
           <Checkbox
-            isIndeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
-            isSelected={table.getIsAllPageRowsSelected()}
+            checked={table.getIsAllPageRowsSelected()}
+            indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
             aria-label='Select all'
-            onValueChange={value => table.toggleAllPageRowsSelected(!!value)}
+            onCheckedChange={value => table.toggleAllPageRowsSelected(value)}
           />
         </div>
       ),
@@ -361,59 +362,64 @@ export function UserManagementTable({ sortField, sortOrder, totalCount, totalPag
             <>
               {/* Selection action toolbar */}
               <div className='flex animate-in items-center gap-2 fade-in slide-in-from-right-2'>
-                <div className='flex items-center gap-2 rounded-md border border-primary/20 bg-primary/10 px-3 py-1.5 shadow-sm'>
-                  <span className='text-sm font-medium whitespace-nowrap text-primary tabular-nums'>
+                <div className='flex items-center gap-2 rounded-md border border-brand/20 bg-brand/10 px-3 py-1.5 shadow-sm'>
+                  <span className='text-sm font-medium whitespace-nowrap text-brand tabular-nums'>
                     {selectedCount} {selectedCount === 1 ? 'user' : 'users'} selected
                   </span>
                   {selectedRoleBreakdown && (
-                    <TooltipProvider delayDuration={100}>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <InfoIcon className='h-3.5 w-3.5 cursor-default text-primary/60 transition-colors hover:text-primary' />
-                        </TooltipTrigger>
-                        <TooltipContent className='text-xs' side='bottom'>
-                          <p className='mb-1 font-medium'>Role breakdown</p>
-                          {selectedRoleBreakdown.split(' · ').map((item, i) => (
-                            <p key={i} className='text-muted-foreground'>
-                              {item}
-                            </p>
-                          ))}
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <Popover>
+                      <PopoverTrigger
+                        className='text-brand/60 transition-colors hover:text-brand'
+                        openOnHover
+                        delay={100}
+                        aria-label='Selected roles'
+                      >
+                        <InfoIcon className='h-3.5 w-3.5' aria-hidden='true' />
+                      </PopoverTrigger>
+                      <PopoverContent className='text-xs' positionerProps={{ side: 'bottom' }}>
+                        <PopoverTitle className='mb-1 font-medium'>Role breakdown</PopoverTitle>
+                        {selectedRoleBreakdown.split(' · ').map((item, i) => (
+                          <p key={i} className='text-muted-foreground'>
+                            {item}
+                          </p>
+                        ))}
+                      </PopoverContent>
+                    </Popover>
                   )}
                 </div>
                 {bulkError && (
                   <span className='max-w-32 truncate text-xs font-medium text-destructive'>{bulkError}</span>
                 )}
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button className='h-9' disabled={isBulkPending} size='sm' variant='outline'>
-                      {isBulkPending ? (
-                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                      ) : (
-                        <ShieldCheckIcon className='mr-2 h-4 w-4' />
-                      )}
-                      Assign Role
-                    </Button>
+                  <DropdownMenuTrigger
+                    render={<Button className='h-9' disabled={isBulkPending} size='sm' variant='outline' />}
+                  >
+                    {isBulkPending ? (
+                      <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                    ) : (
+                      <ShieldCheckIcon className='mr-2 h-4 w-4' />
+                    )}
+                    Assign Role
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align='end'>
-                    <DropdownMenuLabel>
-                      Assign Role to {selectedCount} {selectedCount === 1 ? 'user' : 'users'}
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {BULK_ROLE_OPTIONS.map(opt => (
-                      <DropdownMenuItem key={opt.value} onClick={() => handleBulkAssignRole(opt.value)}>
-                        {opt.label}
-                      </DropdownMenuItem>
-                    ))}
+                  <DropdownMenuContent positionerProps={{ align: 'end' }}>
+                    <DropdownMenuGroup>
+                      <DropdownMenuLabel>
+                        Assign Role to {selectedCount} {selectedCount === 1 ? 'user' : 'users'}
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {BULK_ROLE_OPTIONS.map(opt => (
+                        <DropdownMenuItem key={opt.value} onClick={() => handleBulkAssignRole(opt.value)}>
+                          {opt.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuGroup>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 <Button
                   className='h-9'
+                  color='destructive'
                   disabled={isBulkPending}
                   size='sm'
-                  variant='destructive'
                   onClick={handleBulkDelete}
                 >
                   {isBulkPending ? (
@@ -427,8 +433,14 @@ export function UserManagementTable({ sortField, sortOrder, totalCount, totalPag
             </>
           )}
 
-          <Select value={currentRole || 'ALL'} onValueChange={val => updateQueryParams({ role: val })}>
-            <SelectTrigger className='w-full sm:w-40'>
+          <Select
+            items={ROLE_OPTIONS}
+            value={currentRole || 'ALL'}
+            onValueChange={val => {
+              if (val !== null) updateQueryParams({ role: val });
+            }}
+          >
+            <SelectTrigger className='w-full sm:w-40' aria-label='Filter by Role'>
               <SelectValue placeholder='Filter by Role' />
             </SelectTrigger>
             <SelectContent>
@@ -440,14 +452,12 @@ export function UserManagementTable({ sortField, sortOrder, totalCount, totalPag
             </SelectContent>
           </Select>
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className='h-10' size='sm' variant='outline'>
-                <ColumnsIcon className='mr-2 h-4 w-4' />
-                <span className='hidden lg:inline'>Customize Columns</span>
-                <span className='lg:hidden'>Columns</span>
-              </Button>
+            <DropdownMenuTrigger render={<Button className='h-10' size='sm' variant='outline' />}>
+              <ColumnsIcon className='mr-2 h-4 w-4' />
+              <span className='hidden lg:inline'>Customize Columns</span>
+              <span className='lg:hidden'>Columns</span>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className='w-56' align='end'>
+            <DropdownMenuContent className='w-56' positionerProps={{ align: 'end' }}>
               {table
                 .getAllColumns()
                 .filter(column => typeof column.accessorFn !== 'undefined' && column.getCanHide())
@@ -539,7 +549,7 @@ export function UserManagementTable({ sortField, sortOrder, totalCount, totalPag
             <Button
               className='size-8'
               disabled={currentPage <= 1 || isPending}
-              size='icon'
+              size='icon-md'
               variant='outline'
               onClick={() => updateQueryParams({ page: String(currentPage - 1) })}
             >
@@ -549,7 +559,7 @@ export function UserManagementTable({ sortField, sortOrder, totalCount, totalPag
             <Button
               className='size-8'
               disabled={currentPage >= totalPages || isPending}
-              size='icon'
+              size='icon-md'
               variant='outline'
               onClick={() => updateQueryParams({ page: String(currentPage + 1) })}
             >
@@ -559,7 +569,7 @@ export function UserManagementTable({ sortField, sortOrder, totalCount, totalPag
             <Button
               className='hidden size-8 lg:flex'
               disabled={currentPage >= totalPages || isPending}
-              size='icon'
+              size='icon-md'
               variant='outline'
               onClick={() => updateQueryParams({ page: String(totalPages) })}
             >

@@ -51,6 +51,7 @@ export const env = createEnv({
         DEV_ACCOUNTS: devAccountsSchema,
         // Postgres database
         DATABASE_URL: z.preprocess(emptyStringAsUndefined, z.string().trim().min(1)),
+        DATABASE_ADAPTER: z.enum(['neon', 'pg']).default('neon'),
         DIRECT_URL: z.preprocess(emptyStringAsUndefined, z.string().trim().min(1).optional()),
         // Better Auth
         BETTER_AUTH_API_KEY: z.preprocess(emptyStringAsUndefined, z.string().trim().min(1).optional()),
@@ -64,6 +65,15 @@ export const env = createEnv({
         GOOGLE_CLIENT_SECRET: z.preprocess(emptyStringAsUndefined, z.string().trim().min(1)),
         // Resend email service
         RESEND_API_KEY: z.preprocess(emptyStringAsUndefined, z.string().trim().min(1)),
+        RESEND_FROM_EMAIL: z.preprocess(
+            emptyStringAsUndefined,
+            z.string().trim().min(1).default('Courseroad <onboarding@resend.dev>')
+        ),
+        // Most recipients one announcement may email. 0 (the default) disables announcement email.
+        ANNOUNCEMENT_EMAIL_MAX_RECIPIENTS: z.preprocess(
+            emptyStringAsUndefined,
+            z.coerce.number().int().min(0).default(0)
+        ),
         // Arcjet security service
         ARCJET_API_KEY: z.preprocess(emptyStringAsUndefined, z.string().trim().min(1)),
         // Bunny Stream
@@ -78,12 +88,22 @@ export const env = createEnv({
         // Structured logging
         LOG_LEVEL: z.enum(['trace', 'debug', 'info', 'warn', 'error', 'fatal']).default('info'),
         // Stripe
-        STRIPE_ACTIVATION_PRICE_ID: z.preprocess(emptyStringAsUndefined, z.string().trim().min(1)),
-        STRIPE_SECRET_KEY: z.preprocess(emptyStringAsUndefined, z.string().trim().min(1)),
-        STRIPE_WEBHOOK_SECRET: z.preprocess(emptyStringAsUndefined, z.string().trim().min(1))
+        STRIPE_ACTIVATION_PRICE_ID: z.preprocess(
+            emptyStringAsUndefined,
+            publicEnv.NEXT_PUBLIC_PAYMENTS_ENABLED ? z.string().trim().min(1) : z.string().trim().min(1).optional()
+        ),
+        STRIPE_SECRET_KEY: z.preprocess(
+            emptyStringAsUndefined,
+            publicEnv.NEXT_PUBLIC_PAYMENTS_ENABLED ? z.string().trim().min(1) : z.string().trim().min(1).optional()
+        ),
+        STRIPE_WEBHOOK_SECRET: z.preprocess(
+            emptyStringAsUndefined,
+            publicEnv.NEXT_PUBLIC_PAYMENTS_ENABLED ? z.string().trim().min(1) : z.string().trim().min(1).optional()
+        )
     },
     runtimeEnv: {
         ADMIN_EMAILS: process.env.ADMIN_EMAILS?.trim() || undefined,
+        ANNOUNCEMENT_EMAIL_MAX_RECIPIENTS: process.env.ANNOUNCEMENT_EMAIL_MAX_RECIPIENTS?.trim() || undefined,
         ARCJET_API_KEY: process.env.ARCJET_API_KEY?.trim() || undefined,
         BETTER_AUTH_API_KEY: process.env.BETTER_AUTH_API_KEY?.trim() || undefined,
         BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET?.trim() || undefined,
@@ -97,6 +117,7 @@ export const env = createEnv({
         BUNNY_WEBHOOK_SECRET: process.env.BUNNY_WEBHOOK_SECRET?.trim() || undefined,
         CREATOR_EMAILS: process.env.CREATOR_EMAILS?.trim() || process.env.TEACHER_EMAILS?.trim() || undefined,
         DATABASE_URL: process.env.DATABASE_URL?.trim() || undefined,
+        DATABASE_ADAPTER: process.env.DATABASE_ADAPTER,
         DEV_ACCOUNTS: process.env.DEV_ACCOUNTS?.trim() || undefined,
         DIRECT_URL: process.env.DIRECT_URL?.trim() || undefined,
         GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID?.trim() || undefined,
@@ -105,6 +126,7 @@ export const env = createEnv({
         GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET?.trim() || undefined,
         LOG_LEVEL: process.env.LOG_LEVEL?.trim() || undefined,
         RESEND_API_KEY: process.env.RESEND_API_KEY?.trim() || undefined,
+        RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL?.trim() || undefined,
         STAFF_EMAILS: process.env.STAFF_EMAILS?.trim() || undefined,
         STRIPE_ACTIVATION_PRICE_ID: process.env.STRIPE_ACTIVATION_PRICE_ID?.trim() || undefined,
         STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY?.trim() || undefined,

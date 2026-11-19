@@ -3,10 +3,11 @@
 import { useState } from 'react';
 
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from '@courseroad/kurume-ui';
+
 import { RefreshCw } from 'lucide-react';
 
-import { VideoPlayer } from '@/features/media/video-player';
-import { VideoUpload } from '@/features/media/video-upload';
+import { VideoPlayer } from '@/features/media/components/video-player';
+import { VideoUpload } from '@/features/media/components/video-upload';
 
 type VideoStatus = {
   status: number;

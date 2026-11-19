@@ -2,6 +2,10 @@ import type { JSX } from 'react';
 
 import { BookOpen, CheckCircle, GraduationCap } from 'lucide-react';
 
+import { cn } from '@/lib/utils/cn';
+
+import { statCardClass, statsGridClass } from './dashboard-surfaces';
+
 interface LearnerDashboardStatsProps {
   completedCount: number;
   enrolledCount: number;
@@ -15,9 +19,9 @@ export function LearnerDashboardStats({
 }: LearnerDashboardStatsProps): JSX.Element {
   const statsList = [
     {
-      bg: 'bg-primary/10',
-      border: 'border-primary/20',
-      icon: <GraduationCap className='size-5 text-primary' />,
+      bg: 'bg-brand/10',
+      border: 'border-brand/20',
+      icon: <GraduationCap className='size-5 text-brand' />,
       title: 'Enrolled Courses',
       value: enrolledCount
     },
@@ -38,11 +42,14 @@ export function LearnerDashboardStats({
   ];
 
   return (
-    <div className='grid animate-in grid-cols-1 gap-4 duration-500 fade-in slide-in-from-bottom-4 sm:grid-cols-2 lg:grid-cols-3'>
+    <div className={cn(statsGridClass, 'animate-in duration-500 fade-in slide-in-from-bottom-4')}>
       {statsList.map((stat, i) => (
         <div
           key={i}
-          className='border-default-200/50 hover:border-default-300 relative flex items-center gap-4 overflow-hidden rounded-2xl border bg-background/50 p-6 shadow-sm backdrop-blur-md transition-all hover:-translate-y-1 hover:scale-[1.02]'
+          className={cn(
+            statCardClass,
+            'hover:border-default-300 transition-all hover:-translate-y-1 hover:scale-[1.02]'
+          )}
           style={{ animationDelay: `${i * 100}ms`, animationFillMode: 'both' }}
         >
           {/* Subtle gradient blob background for each card */}

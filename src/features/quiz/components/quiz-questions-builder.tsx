@@ -7,8 +7,8 @@ import type { DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import type { Control, FieldArrayWithId, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import type { z } from 'zod';
 
-import { Checkbox, showErrorToast, showSuccessToast } from '@courseroad/iota-ui';
-import { BadgeCircular } from '@courseroad/kurume-ui';
+import { Checkbox } from '@courseroad/iota-ui';
+import { BadgeCircular, showErrorToast, showSuccessToast } from '@courseroad/kurume-ui';
 import { Button } from '@courseroad/kurume-ui';
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@courseroad/kurume-ui';
 import { ConfirmationDialog } from '@courseroad/kurume-ui';
@@ -26,6 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@courseroad/kurume-ui';
 import { Tabs } from '@courseroad/kurume-ui';
 import { SUPPORTED_LANGUAGES } from '@courseroad/kurume-ui/editor';
+
 import {
   closestCorners,
   DndContext,
@@ -60,10 +61,10 @@ import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { codeToHtml } from 'shiki/bundle/web';
 
 import { saveQuizQuestions } from '@/features/quiz/actions/quiz-questions-actions';
-import { QuestionType } from '@/features/quiz/question-types';
-import { insertQuizQuestionsSchema } from '@/features/quiz/schemas';
+import { insertQuizQuestionsSchema } from '@/features/quiz/schemas/schemas';
+import { QuestionType } from '@/features/quiz/types/question-types';
 
-import type { QuizOption, QuizQuestion } from '@/features/quiz/editor-types';
+import type { QuizOption, QuizQuestion } from '@/features/quiz/types/editor-types';
 
 import { QuizMarkdownEditor } from './quiz-markdown-editor';
 
@@ -218,8 +219,8 @@ function SortableQuestionItem({
   return (
     <div
       ref={setNodeRef}
-      className={`group relative flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors hover:border-primary/40 ${
-        isSelected ? 'border-primary bg-primary/5' : 'border-border bg-card'
+      className={`group relative flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors hover:border-brand/40 ${
+        isSelected ? 'border-brand bg-brand/5' : 'border-border bg-card'
       }`}
       style={style}
       role='button'
@@ -243,7 +244,7 @@ function SortableQuestionItem({
         <div className='flex items-center gap-2'>
           <span
             className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold ${
-              isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+              isSelected ? 'bg-brand text-brand-foreground' : 'bg-muted text-muted-foreground'
             }`}
           >
             Q{index + 1}
@@ -260,7 +261,7 @@ function SortableQuestionItem({
       <Button
         className='shrink-0 hover:text-destructive'
         type='button'
-        size='icon'
+        size='icon-md'
         variant='ghost'
         onClick={e => {
           e.stopPropagation();
@@ -533,8 +534,8 @@ export function QuizQuestionsBuilder({
               <CardContent className='space-y-4 pb-2'>
                 {fields.length === 0 ? (
                   <div className='rounded-xl border-2 border-dashed bg-muted/20 p-8 text-center'>
-                    <div className='mx-auto w-fit rounded-full bg-primary/10 p-3'>
-                      <ListIcon className='h-6 w-6 text-primary' />
+                    <div className='mx-auto w-fit rounded-full bg-brand/10 p-3'>
+                      <ListIcon className='h-6 w-6 text-brand' />
                     </div>
                     <p className='mt-3 text-sm text-muted-foreground'>
                       No questions yet. Add your first question below.
@@ -575,8 +576,8 @@ export function QuizQuestionsBuilder({
                     <DragOverlay>
                       {activeDragId ? (
                         <div className='flex w-full cursor-grabbing items-center gap-2 rounded-lg border bg-card p-3 opacity-90 shadow-2xl'>
-                          <div className='rounded-full bg-primary/10 p-1'>
-                            <span className='block h-4 w-4 rounded-full bg-primary' />
+                          <div className='rounded-full bg-brand/10 p-1'>
+                            <span className='block h-4 w-4 rounded-full bg-brand' />
                           </div>
                           <span className='text-sm font-medium'>
                             {(() => {
@@ -762,7 +763,17 @@ function OptionsSection({
           <div className='flex flex-none flex-col gap-3 pr-4'>
             <FieldLabel>Question Type</FieldLabel>
             <div className='w-42 max-w-42'>
-              <Select value={questionType} onValueChange={onTypeChange}>
+              <Select
+                items={{
+                  [QuestionType.SINGLE_CHOICE]: 'Single Choice',
+                  [QuestionType.MULTIPLE_CHOICE]: 'Multiple Choice',
+                  [QuestionType.CUSTOM_INPUT]: 'Custom Input'
+                }}
+                value={questionType}
+                onValueChange={next => {
+                  if (next !== null) onTypeChange(next);
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -775,7 +786,7 @@ function OptionsSection({
             </div>
           </div>
 
-          <Separator orientation='vertical' />
+          <Separator orientation='vertical' role='presentation' />
 
           <div className='flex flex-none flex-col gap-3 px-4'>
             <FieldLabel>Answer Format</FieldLabel>
@@ -805,7 +816,7 @@ function OptionsSection({
                 initial={{ opacity: 0, width: 0 }}
                 transition={{ duration: 0.2, ease: 'easeInOut' }}
               >
-                <Separator orientation='vertical' />
+                <Separator orientation='vertical' role='presentation' />
                 <div className='flex flex-none flex-col gap-3 pl-4'>
                   <FieldLabel>Programming Language</FieldLabel>
                   <LanguagePicker
@@ -902,7 +913,7 @@ function OptionsBuilder({
             <Button
               className='hover:text-destructive'
               type='button'
-              size='icon'
+              size='icon-md'
               variant='ghost'
               onClick={() => remove(optIndex)}
             >
@@ -923,7 +934,7 @@ function OptionsBuilder({
         return (
           <div
             key={field.id}
-            className='flex items-center gap-3 rounded-lg border bg-background p-3 transition-colors hover:border-primary/30'
+            className='flex items-center gap-3 rounded-lg border bg-background p-3 transition-colors hover:border-brand/30'
           >
             <Checkbox
               checked={isCorrect}
@@ -974,7 +985,7 @@ function OptionsBuilder({
             <Button
               className='hover:text-destructive'
               type='button'
-              size='icon'
+              size='icon-md'
               variant='ghost'
               onClick={() => remove(optIndex)}
             >

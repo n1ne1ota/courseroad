@@ -12,6 +12,7 @@ import {
   SidebarMenuItem,
   useSidebar
 } from '@courseroad/kurume-ui/dashboard';
+
 import { FolderIcon, MoreHorizontalIcon, ShareIcon } from 'lucide-react';
 
 import type { NavItems } from '@/types/data.types';
@@ -25,23 +26,21 @@ export function DashboardNavDocuments({ items }: { items: NavItems[] }) {
       <SidebarMenu>
         {items.map(item => (
           <SidebarMenuItem key={item.title}>
-            <SidebarMenuButton asChild>
-              <Link href={item.url}>
-                <item.icon />
-                <span>{item.title}</span>
-              </Link>
+            <SidebarMenuButton render={<Link href={item.url} />}>
+              <item.icon />
+              <span>{item.title}</span>
             </SidebarMenuButton>
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuAction className='rounded-sm data-[state=open]:bg-accent' showOnHover>
-                  <MoreHorizontalIcon />
-                  <span className='sr-only'>More</span>
-                </SidebarMenuAction>
+              <DropdownMenuTrigger
+                render={<SidebarMenuAction className='rounded-sm data-[popup-open]:bg-accent' showOnHover />}
+              >
+                <MoreHorizontalIcon />
+                <span className='sr-only'>More</span>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 className='w-24 rounded-lg'
-                align={isMobile ? 'end' : 'start'}
-                side={isMobile ? 'bottom' : 'right'}
+
+                positionerProps={{ align: isMobile ? 'end' : 'start', side: isMobile ? 'bottom' : 'right' }}
               >
                 <DropdownMenuItem>
                   <FolderIcon />

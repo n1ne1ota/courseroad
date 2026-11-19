@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import type { JSX } from 'react';
 import { memo, startTransition, useActionState, useCallback, useEffect, useRef, useState } from 'react';
@@ -6,28 +6,40 @@ import { memo, startTransition, useActionState, useCallback, useEffect, useRef, 
 import type { Route } from 'next';
 import { usePathname, useRouter } from 'next/navigation';
 
-import { Checkbox, showErrorToast, showWarningToast } from '@courseroad/iota-ui';
-import { Button, Card, CardContent, CardFooter, CardHeader, CardTitle, Input, Label } from '@courseroad/kurume-ui';
+import { Checkbox } from '@courseroad/iota-ui';
+import {
+  Button,
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  showErrorToast,
+  showWarningToast
+} from '@courseroad/kurume-ui';
 import { HtmlContent } from '@courseroad/kurume-ui/editor';
+
 import { ChevronLeftIcon, ChevronRightIcon, ClockIcon, SendIcon } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 
 import { extractOrgSlug } from '@/lib/routes/org';
 
 import { submitQuizAnswers } from '@/features/quiz/actions/quiz-submission-actions';
-import { QuestionType } from '@/features/quiz/question-types';
+import { QuestionType } from '@/features/quiz/types/question-types';
 
-import type { SubmitQuizResult } from '@/features/quiz/submission-types';
+import type { SubmitQuizResult } from '@/features/quiz/types/submission-types';
 import type { ActionState } from '@/types/action.types';
 
 import { useHighlightedPrompts } from '../hooks/use-highlighted-prompts';
-import { formatTime, OPTION_LETTERS, stripLeadingTitle } from '../quiz-player-types';
+import { formatTime, OPTION_LETTERS, stripLeadingTitle } from '../types/quiz-player-types';
 import { slideTransition, slideVariants } from '../utils/quiz-player-animations';
 import { CodeOptionDisplay } from './code-option-display';
 import { OptionCard, SegmentedProgress } from './quiz-option-card';
 import { ResultsScreen } from './quiz-results-screen';
 
-import type { QuizPlayerProps } from '../quiz-player-types';
+import type { QuizPlayerProps } from '../types/quiz-player-types';
 
 // Quiz Player
 export const QuizPlayer = memo(function QuizPlayer({
@@ -210,9 +222,9 @@ export const QuizPlayer = memo(function QuizPlayer({
             <div
               className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 font-mono text-sm font-semibold tabular-nums transition-colors ${
                 isTimeLow
-                  ? 'animate-pulse border-red-300 bg-red-50 text-red-600 dark:border-red-800 dark:bg-red-950/40 dark:text-red-400'
+                  ? 'animate-pulse border-destructive/30 bg-destructive/10 text-destructive'
                   : isTimeWarning
-                    ? 'border-yellow-300 bg-yellow-50 text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-400'
+                    ? 'border-warning/30 bg-warning/10 text-warning'
                     : 'border-border bg-muted text-foreground'
               }`}
             >
@@ -266,9 +278,9 @@ export const QuizPlayer = memo(function QuizPlayer({
                       key={q.id}
                       className={`flex h-8 w-full items-center justify-center rounded-lg text-xs font-semibold transition-all ${
                         isCurrent
-                          ? 'bg-primary text-primary-foreground shadow-sm'
+                          ? 'bg-brand text-brand-foreground shadow-sm'
                           : isAnswered
-                            ? 'bg-primary/15 text-primary'
+                            ? 'bg-brand/15 text-brand'
                             : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
                       type='button'
@@ -283,11 +295,11 @@ export const QuizPlayer = memo(function QuizPlayer({
               {/* Legend */}
               <div className='space-y-1.5 border-t pt-3'>
                 <div className='flex items-center gap-2 text-xs text-muted-foreground'>
-                  <span className='h-2.5 w-2.5 rounded-full bg-primary' />
+                  <span className='h-2.5 w-2.5 rounded-full bg-brand' />
                   Current
                 </div>
                 <div className='flex items-center gap-2 text-xs text-muted-foreground'>
-                  <span className='h-2.5 w-2.5 rounded-full bg-primary/40' />
+                  <span className='h-2.5 w-2.5 rounded-full bg-brand/40' />
                   Answered
                 </div>
                 <div className='flex items-center gap-2 text-xs text-muted-foreground'>
@@ -305,7 +317,7 @@ export const QuizPlayer = memo(function QuizPlayer({
           <Card>
             <CardHeader>
               <div className='flex items-center gap-2'>
-                <span className='flex h-7 items-center rounded-lg bg-primary/10 px-2.5 text-xs font-bold text-primary'>
+                <span className='flex h-7 items-center rounded-lg bg-brand/10 px-2.5 text-xs font-bold text-brand'>
                   Q{currentIndex + 1}
                 </span>
                 {currentQuestion.title && (
@@ -385,16 +397,16 @@ export const QuizPlayer = memo(function QuizPlayer({
                           key={opt.id}
                           className={`group flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3.5 text-sm transition-all ${
                             selected
-                              ? 'border-primary bg-primary/5 shadow-sm dark:bg-primary/10'
-                              : 'border-border hover:border-primary/40 hover:bg-muted/40'
+                              ? 'border-brand bg-brand/5 shadow-sm dark:bg-brand/10'
+                              : 'border-border hover:border-brand/40 hover:bg-muted/40'
                           }`}
                         >
                           {/* Letter badge */}
                           <span
                             className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-colors ${
                               selected
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary'
+                                ? 'bg-brand text-brand-foreground'
+                                : 'bg-muted text-muted-foreground group-hover:bg-brand/10 group-hover:text-brand'
                             }`}
                           >
                             {OPTION_LETTERS[optIdx] ?? String(optIdx + 1)}
@@ -405,7 +417,7 @@ export const QuizPlayer = memo(function QuizPlayer({
                               handleMultipleChoice(currentQuestion.id, opt.id, checked)
                             }
                           />
-                          <span className={`flex-1 ${selected ? 'font-medium text-primary' : ''}`}>
+                          <span className={`flex-1 ${selected ? 'font-medium text-brand' : ''}`}>
                             {isCodeQuestion ? (
                               <CodeOptionDisplay
                                 code={opt.content}
@@ -450,9 +462,9 @@ export const QuizPlayer = memo(function QuizPlayer({
                     key={q.id}
                     className={`h-2 rounded-full transition-all ${
                       i === currentIndex
-                        ? 'w-4 bg-primary'
+                        ? 'w-4 bg-brand'
                         : q.id in answers
-                          ? 'w-2 bg-primary/40'
+                          ? 'w-2 bg-brand/40'
                           : 'w-2 bg-muted-foreground/30'
                     }`}
                     type='button'
@@ -462,7 +474,7 @@ export const QuizPlayer = memo(function QuizPlayer({
               </div>
 
               {currentIndex < questions.length - 1 ? (
-                <Button variant='primary' onClick={() => navigateTo(currentIndex + 1)}>
+                <Button onClick={() => navigateTo(currentIndex + 1)}>
                   Next
                   <ChevronRightIcon className='ml-1.5 h-4 w-4' />
                 </Button>
@@ -470,7 +482,7 @@ export const QuizPlayer = memo(function QuizPlayer({
                 <Button
                   disabled={isPending || isPreparing}
                   isLoading={isPending || isPreparing}
-                  variant='primary'
+
                   onClick={handleSubmit}
                 >
                   <SendIcon className='mr-1.5 h-4 w-4' />

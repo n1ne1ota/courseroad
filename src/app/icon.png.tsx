@@ -1,5 +1,7 @@
 import { ImageResponse } from 'next/og';
 
+import { COLORS } from '@/lib/constants/colors';
+
 export const size = {
   height: 32,
   width: 32
@@ -12,8 +14,8 @@ export default async function Icon() {
     <div
       style={{
         alignItems: 'center',
-        background: '#111827',
-        color: 'white',
+        background: COLORS.hex['zinc-950'],
+        color: COLORS.white,
         display: 'flex',
         fontSize: 20,
         fontWeight: 800,

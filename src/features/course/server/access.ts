@@ -16,7 +16,7 @@ export async function requireCourseAccess(
     const user = await getAuthenticatedUser();
     const course = await prismaClient.course.findUnique({
         where: { id },
-        select: { id: true, organizationId: true, userId: true, status: true, price: true }
+        select: { id: true, organizationId: true, userId: true, status: true, visibility: true, price: true }
     });
     if (!course) throw new AccessError('Course not found', 404);
     let organizationSlug: string | null = null;
@@ -40,7 +40,10 @@ export async function requireCourseAccess(
         select: { id: true }
     });
     if (mode === 'learn' && !enrollment) throw new AccessError('Enrollment required');
-    if (mode === 'enroll' && (course.status !== 'Published' || ((course.price ?? 0) > 0 && !enrollment)))
+    if (
+        mode === 'enroll' &&
+        (course.status !== 'Published' || course.visibility === 'Private' || ((course.price ?? 0) > 0 && !enrollment))
+    )
         throw new AccessError('Course cannot be enrolled for free');
     return { user, course, organizationSlug };
 }

@@ -2,14 +2,14 @@ import 'server-only';
 
 import { revalidatePath } from 'next/cache';
 
-import { submitQuizSchema } from '@/features/quiz/schemas';
-import { submitQuizAnswers as submitQuizAnswersMutation } from '@/features/quiz/server/repositories/mutations/index';
+import { submitQuizSchema } from '@/features/quiz/schemas/schemas';
+import { submitQuizAnswers as submitQuizAnswersMutation } from '@/features/quiz/server/db/mutations/index';
 import { createAuthFormAction } from '@/server/actions/create-auth-action';
 import { createTenantFormAction } from '@/server/actions/create-tenant-action';
 import { prismaClient } from '@/server/db/client';
 import { getTenantPrisma } from '@/server/db/get-tenant-prisma';
 
-import type { QuestionResult, SubmitQuizResult } from '@/features/quiz/server/repositories/mutations/index';
+import type { QuestionResult, SubmitQuizResult } from '@/features/quiz/server/db/mutations/index';
 
 export type { QuestionResult, SubmitQuizResult };
 

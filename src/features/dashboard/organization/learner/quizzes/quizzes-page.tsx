@@ -4,10 +4,14 @@ import type { JSX } from 'react';
 
 import Link from 'next/link';
 
-import { Button } from '@courseroad/kurume-ui';
+import { buttonVariants } from '@courseroad/kurume-ui';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@courseroad/kurume-ui';
+
 import { BookOpenIcon, ClockIcon, HelpCircleIcon, RotateCcwIcon, TrophyIcon } from 'lucide-react';
 
+import { cn } from '@/lib/utils/cn';
+
+import { listCardGridClass } from '@/features/dashboard/shared/ui/dashboard-surfaces';
 import { loadLearnerQuizzesView } from '@/features/quiz/server/loaders/organization-learner-quizzes-quizzes';
 import { readForPage } from '@/server/auth/page-access';
 
@@ -29,7 +33,7 @@ export async function LearnerQuizzesView({ orgSlug }: { orgSlug: string }): Prom
   }
 
   return (
-    <div className='mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3'>
+    <div className={cn('mt-6', listCardGridClass)}>
       {quizzes.map(quiz => {
         const totalQuestions = quiz.questionsCount;
         const attemptCount = quiz.attemptCount;
@@ -50,10 +54,10 @@ export async function LearnerQuizzesView({ orgSlug }: { orgSlug: string }): Prom
                   <span
                     className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold tabular-nums ${
                       bestPct >= 80
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        ? 'bg-success/15 text-success'
                         : bestPct >= 50
-                          ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                          : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                          ? 'bg-warning/15 text-warning'
+                          : 'bg-destructive/15 text-destructive'
                     }`}
                   >
                     Best: {bestPct}%
@@ -102,7 +106,7 @@ export async function LearnerQuizzesView({ orgSlug }: { orgSlug: string }): Prom
                   </div>
                   <div className='h-1.5 w-full overflow-hidden rounded-full bg-muted'>
                     <div
-                      className='h-full rounded-full bg-primary transition-all'
+                      className='h-full rounded-full bg-brand transition-all'
                       style={{
                         width: `${Math.round((lastAttempt.score / totalQuestions) * 100)}%`
                       }}
@@ -113,18 +117,20 @@ export async function LearnerQuizzesView({ orgSlug }: { orgSlug: string }): Prom
             </CardContent>
 
             <CardFooter>
-              <Button className='w-full' asChild variant={hasAttempted ? 'outline' : 'primary'}>
-                <Link href={orgRoutes.quizEditOrTake(quiz.id)}>
-                  {hasAttempted ? (
-                    <>
-                      <RotateCcwIcon className='mr-2 h-4 w-4' />
-                      Retake Quiz
-                    </>
-                  ) : (
-                    'Start Quiz →'
-                  )}
-                </Link>
-              </Button>
+              <Link
+                className={buttonVariants({ className: 'w-full', variant: hasAttempted ? 'outline' : 'primary' })}
+                href={orgRoutes.quizEditOrTake(quiz.id)}
+                data-slot='button-link'
+              >
+                {hasAttempted ? (
+                  <>
+                    <RotateCcwIcon className='mr-2 h-4 w-4' />
+                    Retake Quiz
+                  </>
+                ) : (
+                  'Start Quiz →'
+                )}
+              </Link>
             </CardFooter>
           </Card>
         );

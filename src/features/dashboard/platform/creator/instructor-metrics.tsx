@@ -4,6 +4,8 @@ import type { JSX } from 'react';
 
 import { BarChart3, DollarSign, GraduationCap, Percent, TrendingUp } from 'lucide-react';
 
+import { chartPanelClass, metricCardClass } from '@/features/dashboard/shared/ui/dashboard-surfaces';
+
 interface InstructorMetricsProps {
   metrics: {
     activeLearners: number;
@@ -38,62 +40,62 @@ export function InstructorMetrics({ metrics }: InstructorMetricsProps): JSX.Elem
   const maxChartVal = Math.max(...chartData.map(d => d.value), 1000);
 
   return (
-    <div className='flex flex-col gap-8'>
+    <div className='flex flex-col gap-6'>
       {/* Metric Cards Grid */}
-      <div className='grid grid-cols-1 gap-6 sm:grid-cols-3'>
+      <div className='grid grid-cols-1 gap-6 @2xl/main:grid-cols-2 @4xl/main:grid-cols-3'>
         {/* Earnings Card */}
-        <div className='border-default-200/50 relative overflow-hidden rounded-3xl border bg-background/40 p-8 shadow-sm backdrop-blur-md'>
-          <div className='pointer-events-none absolute -top-24 -right-24 size-48 rounded-full bg-emerald-500/10 blur-3xl' />
+        <div className={metricCardClass}>
+          <div className='pointer-events-none absolute -top-24 -right-24 size-48 rounded-full bg-success/10 blur-3xl' />
           <div className='flex items-center justify-between gap-4'>
             <div>
               <p className='text-sm font-semibold text-muted-foreground'>Total Earnings</p>
               <h3 className='mt-2 text-2xl font-bold tracking-tight text-foreground'>{displayEarnings}</h3>
-              <p className='mt-1 flex items-center gap-1 text-xs text-emerald-500'>
+              <p className='mt-1 flex items-center gap-1 text-xs text-success'>
                 <TrendingUp className='size-3' />
                 <span>+12.4% vs last month</span>
               </p>
             </div>
-            <div className='flex size-14 items-center justify-center rounded-2xl bg-emerald-500/15 text-emerald-500'>
+            <div className='flex size-14 items-center justify-center rounded-2xl bg-success/15 text-success'>
               <DollarSign className='size-6' />
             </div>
           </div>
         </div>
 
         {/* Enrollments Card */}
-        <div className='border-default-200/50 relative overflow-hidden rounded-3xl border bg-background/40 p-8 shadow-sm backdrop-blur-md'>
-          <div className='pointer-events-none absolute -top-24 -right-24 size-48 rounded-full bg-primary/10 blur-3xl' />
+        <div className={metricCardClass}>
+          <div className='pointer-events-none absolute -top-24 -right-24 size-48 rounded-full bg-brand/10 blur-3xl' />
           <div className='flex items-center justify-between gap-4'>
             <div>
               <p className='text-sm font-semibold text-muted-foreground'>Active Learners</p>
               <h3 className='mt-2 text-2xl font-bold tracking-tight text-foreground'>
                 {metrics.activeLearners.toLocaleString()}
               </h3>
-              <p className='mt-1 flex items-center gap-1 text-xs text-primary'>
+              <p className='mt-1 flex items-center gap-1 text-xs text-brand'>
                 <GraduationCap className='size-3' />
                 <span>Total learner reach</span>
               </p>
             </div>
-            <div className='flex size-14 items-center justify-center rounded-2xl bg-primary/15 text-primary'>
+            <div className='flex size-14 items-center justify-center rounded-2xl bg-brand/15 text-brand'>
               <GraduationCap className='size-6' />
             </div>
           </div>
         </div>
 
         {/* Total Sales Card */}
-        <div className='border-default-200/50 relative overflow-hidden rounded-3xl border bg-background/40 p-8 shadow-sm backdrop-blur-md'>
-          <div className='pointer-events-none absolute -top-24 -right-24 size-48 rounded-full bg-indigo-500/10 blur-3xl' />
+        <div className={metricCardClass}>
+          <div className='pointer-events-none absolute -top-24 -right-24 size-48 rounded-full bg-secondary/10 blur-3xl' />
           <div className='flex items-center justify-between gap-4'>
             <div>
               <p className='text-sm font-semibold text-muted-foreground'>Total Sales</p>
               <h3 className='mt-2 text-2xl font-bold tracking-tight text-foreground'>
                 {metrics.totalSales.toLocaleString()}
               </h3>
-              <p className='mt-1 flex items-center gap-1 text-xs text-indigo-500'>
+              <p className='mt-1 flex items-center gap-1 text-xs text-secondary'>
                 <Percent className='size-3' />
                 <span>100% direct payouts</span>
               </p>
             </div>
-            <div className='flex size-14 items-center justify-center rounded-2xl bg-indigo-500/15 text-indigo-500'>
+            <div className='flex size-14 items-center justify-center rounded-2xl bg-secondary/15 text-secondary'>
               <BarChart3 className='size-6' />
             </div>
           </div>
@@ -101,7 +103,7 @@ export function InstructorMetrics({ metrics }: InstructorMetricsProps): JSX.Elem
       </div>
 
       {/* Sales Trends Chart Card */}
-      <div className='border-default-200/50 rounded-3xl border bg-background/40 p-8 shadow-sm backdrop-blur-md'>
+      <div className={chartPanelClass}>
         <div className='border-default-200/50 mb-6 flex items-center justify-between gap-4 border-b pb-5'>
           <div>
             <h4 className='text-base font-bold text-foreground'>Sales Performance History</h4>
@@ -131,10 +133,10 @@ export function InstructorMetrics({ metrics }: InstructorMetricsProps): JSX.Elem
                   </div>
 
                   <div
-                    className='relative w-full overflow-hidden rounded-t-xl bg-primary/20 transition-all duration-300 hover:bg-primary/45'
+                    className='relative w-full overflow-hidden rounded-t-xl bg-brand/20 transition-all duration-300 hover:bg-brand/45'
                     style={{ height: `${heightPct}%`, minHeight: '4px' }}
                   >
-                    <div className='absolute inset-x-0 bottom-0 h-1/2 bg-primary opacity-30 blur-sm' />
+                    <div className='absolute inset-x-0 bottom-0 h-1/2 bg-brand opacity-30 blur-sm' />
                   </div>
                   <span className='text-xs font-medium text-muted-foreground'>{data.label}</span>
                 </div>

@@ -6,13 +6,15 @@ import { NextResponse } from 'next/server';
 import { detectBot, slidingWindow } from '@arcjet/next';
 import { z } from 'zod';
 
+import { courseCollectionName, videoTitle } from '@/lib/media/storage-layout';
 import { getRequestIdFromRequest } from '@/lib/utils/request-id';
 
+import { resolveMediaContext } from '@/features/media/server/media-context';
+import { requireUploadContext } from '@/features/media/server/upload-access';
 import { auth } from '@/server/auth/auth';
-import { getOrganizationContext } from '@/server/auth/organization-context';
 import { AccessError } from '@/server/auth/session';
 import { logs } from '@/server/logging/server';
-import { createVideo, signTusUpload } from '@/server/media/stream-service';
+import { createVideo, getOrCreateCollection, signTusUpload } from '@/server/media/stream-service';
 import arcjet from '@/server/security/security-service';
 
 /**
@@ -55,17 +57,10 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { organizationId } = await getOrganizationContext(
-            req.headers.get('x-organization-slug') ?? undefined,
-            'creator'
+        const { organizationId, prefixId } = await requireUploadContext(
+            session.user,
+            req.headers.get('x-organization-slug') ?? undefined
         );
-        if (!organizationId) {
-            logs.upload.warn('Video presign rejected: no active organization', {
-                action: 'presign_no_org',
-                requestId
-            });
-            return NextResponse.json({ error: 'No active organization' }, { status: 403 });
-        }
 
         const decision = await arcjet
             .withRule(detectBot({ allow: [], mode: 'LIVE' }))
@@ -87,14 +82,18 @@ export async function POST(req: NextRequest) {
 
         const presignSchema = z
             .object({
+                courseId: z.string().optional(),
+                lessonId: z.string().optional(),
                 title: z.string().optional()
             })
             .strict();
 
         let title: string | undefined;
+        let rawContext: { courseId?: string | undefined; lessonId?: string | undefined } = {};
         try {
             const body = presignSchema.parse(await req.json());
             title = body.title;
+            rawContext = { courseId: body.courseId, lessonId: body.lessonId };
         } catch (err: unknown) {
             const isZodError = err instanceof z.ZodError;
             logs.upload.warn('Video presign rejected: Invalid request payload', {
@@ -108,9 +107,22 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        const safeTitle = `[${organizationId}] ${title?.slice(0, 200) || `upload-${Date.now()}`}`;
+        const context = await resolveMediaContext(
+            { ...rawContext, quizId: undefined },
+            { organizationId, userId: session.user.id }
+        );
+        const safeTitle = videoTitle({
+            ...(context.courseId && { courseId: context.courseId }),
+            fileTitle: title?.slice(0, 200) || `upload-${Date.now()}`,
+            ...(context.lessonId && { lessonId: context.lessonId }),
+            ownerKey: prefixId
+        });
+        // One collection per course keeps the Stream library browsable; uploads without a course stay unfiled.
+        const collectionId = context.courseId
+            ? await getOrCreateCollection(courseCollectionName(context.courseId))
+            : undefined;
 
-        logs.upload.info('Video presign processing', {
+        logs.upload.debug('Video presign processing', {
             action: 'presign_processing',
             originalTitle: title,
             requestId,
@@ -120,10 +132,10 @@ export async function POST(req: NextRequest) {
 
         // Create video with timing
         const createVideoStartTime = Date.now();
-        const { guid } = await createVideo(safeTitle);
+        const { guid } = await createVideo(safeTitle, collectionId);
         const createVideoTime = Date.now() - createVideoStartTime;
 
-        logs.upload.info('Video created in Bunny Stream', {
+        logs.upload.debug('Video created in Bunny Stream', {
             action: 'video_created',
             performance: {
                 createVideoTime

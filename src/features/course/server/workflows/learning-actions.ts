@@ -10,12 +10,12 @@ import { requireCourseAccess, requireLessonAccess } from '@/features/course/serv
 import {
     enrollInCourse as enrollInCourseMutation,
     markLessonComplete as markLessonCompleteMutation
-} from '@/features/course/server/repositories/mutations/learning';
+} from '@/features/course/server/db/mutations/learning';
 import { createSafeAction, createSafeFormAction } from '@/server/actions/create-safe-action';
 import { prismaClient } from '@/server/db/client';
 import { withTenantScope } from '@/server/db/tenant';
 
-import type { PrismaLike } from '@/features/course/server/repositories/types';
+import type { PrismaLike } from '@/features/course/server/db/types';
 
 export const enrollInCourse = createSafeFormAction(
     z.object({

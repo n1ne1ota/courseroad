@@ -1,11 +1,13 @@
 'use client';
 
+import { showToast } from '@courseroad/kurume-ui';
+
 import { passkeyClient } from '@better-auth/passkey/client';
-import { showToast } from '@courseroad/iota-ui';
 import {
     adminClient,
     anonymousClient,
     emailOTPClient,
+    inferAdditionalFields,
     jwtClient,
     lastLoginMethodClient,
     magicLinkClient,
@@ -15,6 +17,7 @@ import {
 } from 'better-auth/client/plugins';
 import { createAuthClient } from 'better-auth/react';
 
+import { createAuthUrl, getCallbackUrl } from '@/lib/auth/callback-url';
 import { orgAc, orgCreator, orgInstructor, orgLearner, orgManager, orgOwner } from '@/lib/auth/org-permissions';
 import { ac, admin, creator, learner, staff } from '@/lib/auth/permissions';
 import { forgotPasswordSchema, loginSchema, otpSchema, resetPasswordSchema, signupSchema } from '@/lib/auth/schemas';
@@ -26,6 +29,10 @@ import { normalizeAuthError } from './normalize-auth-error';
 import { otpPending } from './otp-pending';
 export { otpPending };
 
+const browserAccountFields = {
+    user: { onboardingComplete: { type: 'boolean', required: false, input: true } }
+} as const;
+
 /**
  * Better Auth client instance configured with email OTP plugin
  * Handles all authentication API calls and session management
@@ -36,6 +43,8 @@ export { otpPending };
  */
 export const authClient = createAuthClient({
     plugins: [
+        // Mirror the existing browser-writable account field without importing server configuration.
+        inferAdditionalFields<unknown, typeof browserAccountFields>(browserAccountFields),
         emailOTPClient(),
         adminClient({
             ac,
@@ -57,7 +66,10 @@ export const authClient = createAuthClient({
             }
         }),
         twoFactorClient({
-            twoFactorPage: '/two-factor'
+            onTwoFactorRedirect() {
+                if (typeof window !== 'undefined')
+                    window.location.assign(createAuthUrl('/two-factor', getCallbackUrl(undefined, '')));
+            }
         }),
         magicLinkClient(),
         multiSessionClient(),
@@ -203,7 +215,10 @@ export async function signInWithGoogle(callbackURL?: string): Promise<AuthResult
  * }
  * ```
  */
-export async function signInWithEmail(email: string, password: string): Promise<AuthResult<void>> {
+export async function signInWithEmail(
+    email: string,
+    password: string
+): Promise<AuthResult<{ twoFactorRedirect: true }>> {
     try {
         // Client-side validation using Zod schema
         const validation = loginSchema.safeParse({ email, password });
@@ -225,6 +240,10 @@ export async function signInWithEmail(email: string, password: string): Promise<
             email,
             password
         });
+
+        if (result.data && 'twoFactorRedirect' in result.data && result.data.twoFactorRedirect) {
+            return { success: true, data: { twoFactorRedirect: true } };
+        }
 
         if (result.error) {
             const normalizedError = normalizeAuthError(result.error, 'Invalid email or password.');

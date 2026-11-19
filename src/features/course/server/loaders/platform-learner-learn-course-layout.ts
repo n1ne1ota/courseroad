@@ -5,11 +5,8 @@ import type { Route } from 'next';
 import type { Lesson, Module, UserLessonProgress } from '@prisma/client';
 
 import { requireCourseAccess } from '@/features/course/server/access';
-import {
-    getCourseWithCurriculum,
-    getLessonProgress
-} from '@/features/course/server/repositories/queries/get-curriculum';
-import { getEnrollment } from '@/features/course/server/repositories/queries/get-enrollments';
+import { getCourseWithCurriculum, getLessonProgress } from '@/features/course/server/db/queries/get-curriculum';
+import { getEnrollment } from '@/features/course/server/db/queries/get-enrollments';
 import { destination, missingResource } from '@/server/auth/read-errors';
 import { getAuthenticatedUser } from '@/server/auth/session';
 import { prismaClient } from '@/server/db/client';

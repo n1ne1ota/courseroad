@@ -1,15 +1,15 @@
 import Link from 'next/link';
 
 import { Alert, AlertDescription, AlertTitle } from '@courseroad/kurume-ui/components/alert/alert';
-import { Button } from '@courseroad/kurume-ui/components/button/button';
+import { buttonVariants } from '@courseroad/kurume-ui/components/button/button-variants';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@courseroad/kurume-ui/components/card/card';
 
 export default function PaymentsSuccessTestPage() {
   return (
     <div className='flex min-h-[80vh] items-center justify-center p-4'>
-      <Card className='w-full max-w-md border-green-500/20 bg-green-500/5'>
+      <Card className='w-full max-w-md border-success/20 bg-success/5'>
         <CardHeader>
-          <CardTitle className='text-green-500'>Payment Successful! 🎉</CardTitle>
+          <CardTitle className='text-success'>Payment Successful! 🎉</CardTitle>
           <CardDescription>You have successfully reached the return URL.</CardDescription>
         </CardHeader>
         <CardContent className='flex flex-col gap-4'>
@@ -23,9 +23,9 @@ export default function PaymentsSuccessTestPage() {
               Check Prisma Studio to see if a `Purchase` and `Enrollment` record were mockingly created!
             </AlertDescription>
           </Alert>
-          <Button className='w-full' asChild>
-            <Link href='/demo/payments'>Run Another Test</Link>
-          </Button>
+          <Link className={buttonVariants({ className: 'w-full' })} href='/demo/payments' data-slot='button-link'>
+            Run Another Test
+          </Link>
         </CardContent>
       </Card>
     </div>

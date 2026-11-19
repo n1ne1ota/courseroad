@@ -2,7 +2,7 @@ import 'server-only';
 
 import type { JSX } from 'react';
 
-import { SelectOrganizationList } from '@/features/organization/select-organization-list';
+import { SelectOrganizationList } from '@/features/organization/components/select-organization-list';
 import { loadSelectOrganizationPage } from '@/features/organization/server/loaders/select-organization';
 import { readForPage } from '@/server/auth/page-access';
 

@@ -4,7 +4,7 @@ import { cacheLife, cacheTag } from 'next/cache';
 
 import { z } from 'zod';
 
-import { getCourseWithCreator } from '@/features/course/server/repositories/orchestrators';
+import { getCourseWithCreator } from '@/features/course/server/db/orchestrators';
 import { getSession } from '@/server/auth/session';
 import { prismaClient } from '@/server/db/client';
 

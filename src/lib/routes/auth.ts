@@ -6,7 +6,8 @@ export const authRoutes = {
     otp: '/otp',
     resetPassword: '/reset-password',
     signIn: '/sign-in',
-    signUp: '/sign-up'
+    signUp: '/sign-up',
+    twoFactor: '/two-factor'
 } as const;
 
 /**
