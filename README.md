@@ -1,5 +1,10 @@
 # Courseroad
 
+test login
+
+email: creator-tester@courseroad.example
+pw: Cr7!AAtYXGXvcLx0fxHW3R2hRmtD93wSj0nY
+
 ## Deployment
 
 https://courseroad-staging.vercel.app/
